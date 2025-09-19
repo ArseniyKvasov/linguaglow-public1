@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Урок не найден — LinguaGlow</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #fffde7, #e1f5fe);
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .error-container {
+            text-align: center;
+            padding: 40px 30px;
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 520px;
+        }
+        .error-code {
+            font-size: 48px;
+            font-weight: 800;
+            color: #f44336;
+        }
+        .message {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .subtitle {
+            font-size: 18px;
+            margin: 20px 0;
+            color: #555;
+        }
+        .emoji {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .note {
+            font-size: 15px;
+            color: #777;
+        }
+        @keyframes glow {
+            from {
+                filter: drop-shadow(0 0 0px #00e5ff);
+            }
+            to {
+                filter: drop-shadow(0 0 12px #00e5ff);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="emoji">📚🛑🧩</div>
+        <div class="error-code">Урок не найден</div>
+        <div class="subtitle">
+            Преподаватель может привязать новый урок
+            нажав на <strong>плюсик снизу справа</strong> при редактировании урока.
+        </div>
+        <a href="{% url 'home' %}" class="btn btn-outline-primary mt-3">Вернуться на главную</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,522 @@
+{% load static %}
+{% load custom_tags %}
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>LinguaGlow - onboarding</title>
+        {% load custom_filters %}
+        {% load custom_users_tags %}
+        {% load static %}
+        <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+
+        <!-- Bootstrap 5 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+        <style>
+            :root {
+                --card-radius: 22px;
+                --card-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+            }
+
+            .modal-dialog {
+                max-width: 640px;
+            }
+
+            .modal-dialog-centered {
+                min-height: calc(100% - 1rem);
+            }
+
+            .modal-content {
+                border-radius: var(--card-radius);
+                box-shadow: var(--card-shadow);
+                border: 0;
+            }
+
+            .modal.fade .modal-dialog {
+                transition: transform .38s ease, opacity .38s ease;
+                transform: translateY(16px) scale(.98);
+                opacity: .0;
+            }
+
+            .modal.show .modal-dialog {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+
+            .topic-chip {
+                border-radius: 999px;
+                padding: .5rem .9rem;
+                border: 1px solid rgba(0, 0, 0, .08);
+                transition: transform .15s ease, background-color .2s ease;
+            }
+
+            .topic-chip:hover {
+                transform: translateY(-1px);
+            }
+
+            .subtle {
+                color: #6c757d;
+                font-size: .95rem;
+            }
+
+            .ghost-btn {
+                opacity: .8
+            }
+
+            .progress {
+                height: 10px;
+            }
+
+            .guide-step {
+                border-radius: 16px;
+                border: 1px solid rgba(0, 0, 0, .06);
+                padding: .9rem 1rem;
+                background: #fff;
+            }
+
+            .swap-enter {
+                animation: swapIn .35s ease both;
+            }
+
+            @keyframes swapIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px)
+                }
+
+                to {
+                    opacity: 1;
+                    transform: none
+                }
+            }
+        </style>
+    </head>
+    <body class="bg-light">
+
+        <!-- Yandex.Metrika counter -->
+        <script type="text/javascript">
+            (function(m,e,t,r,i,k,a){
+                m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+                m[i].l=1*new Date();
+                for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+                k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+            })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=103833195', 'ym');
+
+            ym(103833195, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+        </script>
+
+        <!-- 1) Приветствие -->
+        <div class="modal fade" id="greetingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body p-4 text-center">
+                        <div class="mb-2 fs-5">Привет 👋</div>
+                        <h4 class="mb-3">Я помогу тебе готовить уроки в 10 раз быстрее.</h4>
+                        <p class="subtle mb-4">Давай начнём?</p>
+                        <button id="createLessonBtn" class="btn btn-primary btn-lg px-4" data-bs-toggle="modal" data-bs-target="#segmentationModal">
+                            Создать первый урок
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2) Сегментация + тема -->
+        <div class="modal fade" id="segmentationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title">Кто ты?</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex gap-2 flex-wrap mb-3">
+                            <button class="btn btn-outline-success option-btn" data-role="Онлайн-репетитор">Онлайн-репетитор</button>
+                            <button class="btn btn-outline-success option-btn" data-role="Оффлайн-преподаватель">Оффлайн-преподаватель</button>
+                            <button class="btn btn-outline-success option-btn" data-role="Школьный учитель">Школьный учитель</button>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <div class="mb-2 fw-semibold">Выбери тему</div>
+                        <div class="d-flex gap-2 flex-wrap mb-3">
+                            <button class="btn topic-chip" data-topic="Animals">Animals</button>
+                            <button class="btn topic-chip" data-topic="Back_to_school">Back to school</button>
+                            <button class="btn topic-chip" data-topic="Online_shopping">Online shopping</button>
+                            <button class="btn topic-chip" data-topic="AI">AI</button>
+                        </div>
+
+                        {% generate_lesson %}
+                        <button id="randomTopic" class="btn btn-link text-decoration-none px-0">Предложите тему 🎲</button>
+
+                        <div class="mt-3 subtle">Выбрано: <span id="pickedRole" class="fw-semibold">—</span> • <span id="pickedTopic" class="fw-semibold">—</span></div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button class="toGenerationBtn btn btn-primary" disabled data-bs-toggle="modal" data-bs-target="#generationModal">
+                            Продолжить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3) Генерация -->
+        <div class="modal fade" id="generationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body p-4">
+                        <h5 class="mb-2">ИИ планирует ваш урок</h5>
+                        <p class="subtle">Это займёт до 2 минут.</p>
+                        <div class="progress mb-2">
+                            <div id="genProgressBar" class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="d-flex justify-content-between subtle mb-3">
+                            <span>Готово:</span>
+                            <span id="genPercent">0%</span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button id="toResultBtn" class="btn btn-primary ms-auto" disabled data-bs-toggle="modal" data-bs-target="#resultModal">
+                                Дальше
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4) Результат -->
+        <div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body p-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="fs-5 me-2">✨</span>
+                            <h5 class="m-0">Готовый урок</h5>
+                        </div>
+                        <p class="mb-4"><span id="topicInResult">{topic}</span></p>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <button id="seeInClassBtn" class="btn btn-primary">Посмотреть в виртуальном классе</button>
+                        </div>
+                        <div class="subtle">Вы только что сэкономили 45 минут подготовки 🎉</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow-lg border-0 rounded-4">
+                    <div class="modal-body p-4 text-center">
+                        <!-- Иконка сверху -->
+                        <div class="mb-3">
+                            <span class="fs-1">🎉</span>
+                        </div>
+
+                        <!-- Заголовок -->
+                        {% if is_paid %}
+                            <h5 class="fw-bold mb-3 text-success">
+                                Ваш подарок — <span class="text-primary">500 токенов</span> 🎁<br>
+                                + <span class="text-warning">Премиум!</span>
+                            </h5>
+                        {% else %}
+                            <h5 class="fw-bold mb-3 text-primary">
+                                🎁 Ваш подарок — <span class="text-warning">7 дней Премиума!</span>
+                            </h5>
+                        {% endif %}
+
+                        <!-- Подзаголовок -->
+                        <p class="text-muted mb-4">Забери его прямо сейчас:</p>
+
+                        <!-- Кнопки -->
+                        <div class="d-flex flex-column gap-3">
+                            {% if lesson_id %}
+                                <a href="{% url 'download_pdf' lesson_id %}" target="_blank"
+                                   class="btn btn-success btn-lg d-flex align-items-center justify-content-center gap-2 rounded-pill fs-6 fs-md-5">
+                                   <i class="bi bi-download fs-5"></i> Скачать урок в PDF
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'invitation_guide' %}" target="_blank"
+                               class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-2 rounded-pill fs-6 fs-md-5"
+                               onclick="updateStep('done')">
+                               <i class="bi bi-telegram fs-5"></i> Гайд: Как вести занятия в виртуальном классе
+                            </a>
+
+                            <a href="{% url 'home' %}"
+                               class="btn btn-outline-secondary btn-lg d-flex align-items-center justify-content-center gap-2 rounded-pill fs-6 fs-md-5"
+                               onclick="updateStep('done')">
+                               <i class="bi bi-house fs-5"></i> На главную страницу
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="recreateModal" tabindex="-1" aria-hidden="true"
+             data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <!-- Header -->
+                    <div class="modal-header">
+                        <h5 class="modal-title">Произошла небольшая ошибка.</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="modal-body">
+                        <p class="mb-0">Попробуем создать урок снова?</p>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-success" onclick="updateStep('done'); window.location.reload();">
+                            Нет, на главную страницу
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="updateStep('segment'); window.location.reload();">
+                            Да, продолжить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bootstrap 5 JS + Popper -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script>
+            // Состояние выбранного
+            let picked = { role: null, topic: null };
+
+            // helper для API (использует имя пути из urls.py)
+            const UPDATE_URL = "{% url 'onboarding_update' %}";
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== "") {
+                    const cookies = document.cookie.split(";");
+                    for (let c of cookies) {
+                        c = c.trim();
+                        if (c.startsWith(name + "=")) {
+                            cookieValue = decodeURIComponent(c.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            function updateStep(step, extra = {}) {
+                const payload = Object.assign({ step }, extra);
+                return fetch(UPDATE_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken")
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify(payload)
+                }).then(res => {
+                    if (!res.ok) console.warn('onboarding update failed', res.status);
+                    return res.json().catch(() => {});
+                }).catch(err => console.error("Onboarding update error:", err));
+            }
+
+            // 1) Greeting -> Segmentation
+            document.getElementById("createLessonBtn").addEventListener("click", () => {
+                updateStep("segment");
+            });
+
+            // Роль
+            document.querySelectorAll("#segmentationModal .option-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    document.querySelectorAll("#segmentationModal .option-btn")
+                        .forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+                    picked.role = btn.dataset.role || btn.textContent.trim();
+                    document.getElementById("pickedRole").textContent = picked.role;
+                    updateContinueState();
+                });
+            });
+
+            // Популярные темы
+            document.querySelectorAll("#segmentationModal .topic-chip").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    document.getElementById("pickedTopic").textContent = btn.textContent.trim();
+                    document.getElementById("lessonGenerationTopic").value = btn.textContent.trim();
+                    document.querySelectorAll('.toGenerationBtn').forEach(btn => {
+                        btn.dataset.topic = btn.textContent.trim();
+                    });
+                    updateContinueState();
+                });
+            });
+
+            // Ввод вручную
+            document.getElementById("lessonGenerationTopic").addEventListener("input", (e) => {
+                const topic = e.target.value.trim();
+                document.getElementById("pickedTopic").textContent = topic;
+                document.querySelectorAll('.toGenerationBtn').forEach(btn => {
+                    btn.dataset.topic = topic;
+                });
+                updateContinueState();
+            });
+
+            // Рандомная тема
+            document.getElementById("randomTopic").addEventListener("click", () => {
+                const pool = ["Food", "Travel", "Jobs", "Hobbies", "Technologies", "Music", "Sports", "Cinema", "Nature"];
+                const t = pool[Math.floor(Math.random() * pool.length)];
+                document.getElementById("pickedTopic").textContent = t;
+                document.getElementById("lessonGenerationTopic").value = t;
+                document.querySelectorAll('.toGenerationBtn').forEach(btn => {
+                    btn.dataset.topic = picked.topic;
+                });
+                updateContinueState();
+            });
+
+            function updateContinueState() {
+                const toGen = document.querySelectorAll('.toGenerationBtn');
+                document.querySelectorAll('.toGenerationBtn').forEach(btn => {
+                    btn.disabled = !(picked.role && document.getElementById("lessonGenerationTopic").value);
+                });
+            }
+
+            // 2) К генерации
+            document.querySelectorAll(".toGenerationBtn").forEach(button => {
+                button.addEventListener("click", async (e) => {
+                    const btn = e.currentTarget;
+                    const topicInput = document.getElementById("lessonGenerationTopic");
+                    picked.topic = topicInput ? topicInput.value : "";  // Проверяем наличие input для темы
+
+                    // 1. Делаем кнопку спиннером
+                    btn.disabled = true;
+                    const oldHtml = btn.innerHTML;
+                    btn.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Подождите...
+                    `;
+
+                    try {
+                        // 2. Отправляем запрос на генерацию
+                        const result = await generateLessonRequest();
+                        console.log(picked);
+
+                        if (result?.generation_id) {
+                            // 3. Сохраняем шаг + generation_id
+                            console.log(picked);
+                            await updateStep("generation_waiting", {
+                                topic: picked.topic,
+                                role: picked.role,
+                                generation_id: result.generation_id
+                            });
+
+                            // Запускаем опрос статуса
+                            pollGenerationStatus(result.generation_id);
+                        } else {
+                            alert("Ошибка: не удалось запустить генерацию.");
+                        }
+                    } catch (err) {
+                        console.error("Ошибка запуска генерации", err);
+                        alert("Ошибка при запуске генерации!");
+                    } finally {
+                        // 4. Возвращаем кнопку в исходное состояние
+                        btn.disabled = false;
+                        btn.innerHTML = oldHtml;
+                    }
+                });
+            });
+
+            function updateLessonGenerationStatus(percent) {
+                const bar = document.getElementById("genProgressBar");
+                const txt = document.getElementById("genPercent");
+                const toResult = document.getElementById("toResultBtn");
+
+                const clamped = Math.min(100, Math.max(0, Math.round(percent)));
+
+                bar.style.width = clamped + "%";
+                bar.setAttribute("aria-valuenow", String(clamped));
+                txt.textContent = clamped + "%";
+
+                // если дошли до 100% — разблокировать кнопку
+                if (clamped >= 100) {
+                    toResult.disabled = false;
+                }
+            }
+
+            // К результату
+            document.getElementById("toResultBtn").addEventListener("click", () => {
+                const topic = picked.topic ? "Урок на тему «" + picked.topic + "» готов." : "Ваш план урока готов.";
+                document.getElementById("topicInResult").textContent = topic;
+
+                updateStep("generation_result", { topic: picked.topic })
+                    .then(data => {
+                        if (data && data.lesson_url && data.pdf_url) {
+                            document.getElementById("seeInClassBtn").onclick = () => {
+                                window.location.href = data.lesson_url;
+                            };
+                        }
+                    });
+            });
+
+
+            // Result -> Feedback
+            document.getElementById("seeInClassBtn").addEventListener("click", () => {
+                updateStep("generation_feedback");
+            });
+
+            document.addEventListener("DOMContentLoaded", async () => {
+                const state = window.ONBOARDING || {};
+                let { current_step, generation_id, lesson_id } = state;
+
+                const order = ["hello", "segment", "generation_waiting", "generation_result", "generation_feedback", "incorrect"];
+                function stepIndex(step) {
+                    return order.indexOf(step);
+                }
+                if (stepIndex(current_step) > stepIndex("segment") && !generation_id) {
+                    current_step = "segment";
+                    await updateStep("segment");
+                }
+
+                function showModal(id) {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    const m = new bootstrap.Modal(el, { backdrop: "static", keyboard: false });
+                    m.show();
+                }
+
+                switch (current_step) {
+                    case "hello":
+                        showModal("greetingModal");
+                        break;
+                    case "segment":
+                        showModal("segmentationModal");
+                        break;
+                    case "generation_waiting":
+                        showModal("generationModal");
+                        if (generation_id) {
+                            pollGenerationStatus(generation_id);
+                        }
+                        break;
+                    case "generation_result":
+                        showModal("generationModal");
+                        if (generation_id) {
+                            pollGenerationStatus(generation_id);
+                        }
+                        break;
+                    case "generation_feedback":
+                        showModal("feedbackModal");
+                        break;
+                    case "incorrect":
+                        showModal("segmentationModal");
+                        break;
+                    default:
+                        showModal("greetingModal");
+                }
+            });
+
+            window.ONBOARDING = {{ onboarding_json|safe }};
+        </script>
+
+    </body>
+</html>

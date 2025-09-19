@@ -1,0 +1,550 @@
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Montserrat', sans-serif;
+    }
+    .pricing-section {
+        padding: 4rem 1rem;
+        background-color: #fff;
+    }
+    .pricing-card {
+        border: none;
+        border-radius: 1rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .pricing-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+    }
+    .pricing-card-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+    }
+    .pricing-price {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #0d6efd;
+    }
+    /* в CSS: мелкий зачёркнутый текст рядом */
+    .original-price {
+        margin-right: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    /* можно добавить плавное появление */
+    .original-price {
+        transition: opacity 0.3s ease;
+        opacity: 1;
+    }
+    .original-price.d-none {
+        opacity: 0;
+        visibility: hidden;
+    }
+    .pricing-features {
+        padding-left: 0;
+        list-style: none;
+    }
+    .pricing-features li::before {
+        content: "\2713"; /* галочка */
+        color: #198754;   /* зелёный */
+        margin-right: 0.5rem;
+    }
+
+    .pricing-features .unavailable::before {
+        content: "\2717"; /* крестик */
+        color: #dc3545;   /* красный */
+    }
+    .pricing-badge-top {
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #ffc107;
+        color: #212529;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-weight: 600;
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075);
+    }
+    .btn-try {
+        background: linear-gradient(270deg, #1e3c72, #2a5298, #00b894, #1e3c72);
+        background-size: 600% 600%;
+        color: #fff;
+        border: none;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        animation: gradientShift 6s ease infinite;
+    }
+
+    .btn-try:hover {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+</style>
+
+
+<section class="pricing-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h1 class="fw-bold">Тарифы LinguaGlow</h1>
+
+            {% if marketing_text %}
+                <p id="marketing-text" class="lead text-success fw-bold">
+                    {{ marketing_text }}
+                    <span id="discount-timer" class="ms-2 badge bg-danger text-white"></span>
+                </p>
+            {% else %}
+                <p id="marketing-text" class="lead">Выберите план и начните обучать уже сегодня</p>
+            {% endif %}
+        </div>
+
+        <div class="row g-4 d-flex justify-content-center mb-3 price-cards-container">
+            {% for plan in plans %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card pricing-card h-100 text-center p-4
+                                {% if plan.key == 'premium' %}border-primary border-2 position-relative{% endif %}">
+                        {% if plan.key == 'premium' %}
+                            <div class="pricing-badge-top">Пик сезона</div>
+                        {% endif %}
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="pricing-card-title">{{ plan.title }}</h5>
+                            {% if plan.period_statuses.month == "connected" %}
+                                {% if plan.title == "Бесплатный" %}
+                                    <p class="fw-bold text-success text-center mt-2 fs-5">Почти твой!</p>
+                                {% else %}
+                                    <p class="fw-bold text-success text-center mt-2 fs-5">Уже твой!</p>
+                                {% endif %}
+                            {% else %}
+                                <p class="pricing-price">
+                                    {# оригинальная цена всегда в DOM (по умолчанию скрыта) #}
+                                    <span class="original-price text-muted small d-none">
+                                        <del>{{ plan.full_price }} ₽</del>
+                                    </span>
+
+                                    <span class="discounted-price js-price"
+                                          data-month="{{ plan.price_month }}"
+                                          data-half="{{ plan.price_6mo }}"
+                                          data-year="{{ plan.price_year }}"
+                                          data-full-month="{{ plan.full_price }}">
+                                        {{ plan.price_month }} ₽ / мес.
+                                    </span>
+                                </p>
+                            {% endif %}
+
+                            <ul class="pricing-features mt-3 mb-4 text-start">
+                                <li class="{% if not plan.access and plan.title != "Бесплатный" %}unavailable{% endif %}">Лучший виртуальный класс</li>
+                                <li>{{ plan.tokens }} токенов ИИ</li>
+                                <li>{{ plan.memory }} ГБ памяти</li>
+                                <li>До {{ plan.classes }} <b>уникальных</b> уроков</li>
+                            </ul>
+
+                            {% if plan.period_statuses.month == 'renew' or plan.period_statuses.month == 'inactive' %}
+                                <a href="#"
+                                   class="btn btn-connect btn-warning rounded-pill mt-auto p-2"
+                                   data-tariff="{{ plan.key }}"
+                                   data-period="month"
+                                   data-status-month="{{ plan.period_statuses.month }}"
+                                    data-status-half="{{ plan.period_statuses.6mo }}"
+                                    data-status-year="{{ plan.period_statuses.year }}">
+                                    Продлить
+                                </a>
+                            {% elif plan.title == "Бесплатный" %}
+                                <a href="{% url 'register' %}" class="btn-try rounded-pill mt-auto p-2 text-decoration-none">
+                                    Попробовать
+                                </a>
+                            {% elif plan.period_statuses.month == 'unavailable' %}
+                                <button class="btn btn-connect btn-outline-secondary rounded-pill mt-auto p-2"
+                                        disabled
+                                        data-tariff="{{ plan.key }}"
+                                        data-status-month="{{ plan.period_statuses.month }}"
+                                        data-status-half="{{ plan.period_statuses.6mo }}"
+                                        data-status-year="{{ plan.period_statuses.year }}">
+                                    Недоступен
+                                </button>
+                            {% else %}
+                                <a href="#"
+                                   class="btn btn-primary btn-connect rounded-pill mt-auto p-2"
+                                   data-tariff="{{ plan.key }}"
+                                   data-period="month"
+                                    data-status-month="{{ plan.period_statuses.month }}"
+                                    data-status-half="{{ plan.period_statuses.6mo }}"
+                                    data-status-year="{{ plan.period_statuses.year }}">
+                                    Подключить
+                                </a>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Period selector -->
+        <div class="row justify-content-end mb-5">
+            <div class="col-auto">
+                <!-- Dropdown for <md -->
+                <div class="dropdown d-md-none mb-3">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="periodDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <span id="current-period-label">Месяц</span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="periodDropdown">
+                        <li>
+                            <a class="dropdown-item {% if is_user_authenticated %}active{% endif %}" href="#" data-period="month">
+                                Месяц {% if discounts.month %}<span class="discount-badge badge bg-warning text-dark rounded-pill ms-1">-{{ discounts.month }}%</span>{% endif %}
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" data-period="6mo">
+                                Полгода {% if discounts.6mo %}<span class="discount-badge badge bg-warning text-dark rounded-pill ms-1">-{{ discounts.6mo }}%</span>{% endif %}
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if not is_user_authenticated %}active{% endif %}" href="#" data-period="year">
+                                Год {% if discounts.year %}<span class="discount-badge badge bg-warning text-dark rounded-pill ms-1">-{{ discounts.year }}%</span>{% endif %}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Button group for ≥md -->
+                <div class="btn-group d-none d-md-flex gap-2 justify-content-center" role="group" aria-label="Период оплаты">
+                    <button type="button" class="btn flex-fill border-0 btn-outline-primary fw-bold text-center rounded-3 {% if is_user_authenticated %}active{% endif %}" data-period="month">
+                        Месяц {% if discounts.month %}<span class="discount-badge badge bg-warning text-dark rounded-pill ms-1">-{{ discounts.month }}%</span>{% endif %}
+                    </button>
+                    <button type="button" class="btn flex-fill border-0 btn-outline-primary fw-bold text-center rounded-3" data-period="6mo">
+                        Полгода {% if discounts.6mo %}<span class="discount-badge badge bg-warning text-dark rounded-pill ms-1">-{{ discounts.6mo }}%</span>{% endif %}
+                    </button>
+                    <button type="button" class="btn flex-fill border-0 btn-outline-primary fw-bold text-center rounded-3 {% if not is_user_authenticated %}active{% endif %}" data-period="year">
+                        Год {% if discounts.year %}<span class="discount-badge badge bg-warning text-dark rounded-pill ms-1">-{{ discounts.year }}%</span>{% endif %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    (function () {
+        'use strict';
+
+        // ---- Утилиты ----
+        function getCookie(name) {
+            const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? decodeURIComponent(match[2]) : '';
+        }
+
+        function formatMoney(v) {
+            // Вход: число, вывод: "1234 ₽"
+            return String(v) + ' ₽ / мес.';
+        }
+
+        // Вспомогательная функция: переводим period в dataset-ключ статуса
+        function periodToStatusKey(period) {
+            if (period === 'month') return 'statusMonth';
+            if (period === '6mo') return 'statusHalf';
+            if (period === 'year') return 'statusYear';
+            return 'statusMonth';
+        }
+
+        function updateConnectButtonByStatus(btn, status, period) {
+            // Очистим все варианты классов и атрибутов
+            btn.classList.remove('btn-primary', 'btn-warning', 'btn-secondary', 'btn-outline-secondary');
+            btn.classList.remove('disabled');
+            btn.removeAttribute('disabled');
+            btn.href = '#';
+            console.log(status, period);
+
+            switch (status) {
+                case 'connected':
+                    // Показываем серую кнопку "Подключено" disabled
+                    btn.remove();
+                    break;
+                case 'renew':
+                    // Предлагаем продлить — оранжевая ссылка/кнопка
+                    btn.classList.add('btn', 'btn-warning');
+                    btn.textContent = 'Продлить';
+                    // можно поставить data-action для обработчика
+                    btn.dataset.action = 'renew';
+                    btn.dataset.period = period;
+                    break;
+                case 'unavailable':
+                    // Недоступен
+                    btn.classList.add('btn', 'btn-outline-secondary');
+                    btn.textContent = 'Недоступен';
+                    btn.setAttribute('disabled', 'disabled');
+                    break;
+                default:
+                    // Обычная кнопка подключения
+                    btn.classList.add('btn', 'btn-primary');
+                    btn.textContent = 'Подключить';
+                    btn.dataset.action = 'connect';
+                    btn.dataset.period = period;
+                    break;
+            }
+        }
+
+        // ---- Логика обновления цен ----
+        function updatePricesForPeriod(period) {
+            const items = document.querySelectorAll('.discounted-price.js-price');
+
+            items.forEach(item => {
+                const m = parseFloat((item.dataset.month || '0').replace(',', '.')) || 0;
+                const h = parseFloat((item.dataset.half || '0').replace(',', '.')) || 0;
+                const y = parseFloat((item.dataset.year || '0').replace(',', '.')) || 0;
+                const fm = parseFloat((item.dataset.fullMonth || '0').replace(',', '.')) || 0;
+
+                let p;
+                switch (period) {
+                    case '6mo':
+                        p = Math.max(1, Math.round(h / 6)); // минимум 1 рубль
+                        break;
+                    case 'year':
+                        p = Math.max(1, Math.round(y / 12)); // минимум 1 рубль
+                        break;
+                    default:
+                        p = Math.max(1, Math.round(m)); // минимум 1 рубль
+                }
+
+                item.textContent = formatMoney(p);
+
+                const origWrapper = item.parentElement.querySelector('.original-price');
+                if (origWrapper) {
+                    if (fm > p) {
+                        origWrapper.classList.remove('d-none');
+                        const del = origWrapper.querySelector('del');
+                        if (del) del.textContent = fm + ' ₽';
+                    } else {
+                        origWrapper.classList.add('d-none');
+                    }
+                }
+            });
+
+            // Обновляем data-period у кнопок подключения и их внешний вид согласно статусу для периода
+            document.querySelectorAll('.btn-connect').forEach(btn => {
+                // берем статус для текущего периода из data-атрибутов
+                const key = periodToStatusKey(period); // например 'statusMonth' или 'status6mo'
+                console.log(btn.dataset, key, btn.dataset[key]);
+                const status = btn.dataset[key] || 'available';
+                updateConnectButtonByStatus(btn, status, period);
+            });
+        }
+
+        // ---- Управление активным периодом (UI) ----
+        function setActivePeriodUI(clickedEl) {
+            // dropdown items
+            if (clickedEl.classList.contains('dropdown-item')) {
+                document.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
+                clickedEl.classList.add('active');
+                const label = document.getElementById('current-period-label');
+                if (label) label.textContent = clickedEl.textContent.trim();
+            } else {
+                // кнопки в btn-group
+                const group = clickedEl.closest('.btn-group');
+                if (!group) return;
+                group.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                clickedEl.classList.add('active');
+            }
+        }
+
+        // ---- Делегирование кликов по period элементам ----
+        document.addEventListener('click', function (e) {
+            const el = e.target.closest('[data-period]');
+            if (!el) return;
+
+            e.preventDefault();
+            const period = el.dataset.period;
+            setActivePeriodUI(el);
+            updatePricesForPeriod(period);
+        });
+
+        // ---- Утилиты ----
+        function showAlert(text) {
+            // можно заменить на ваш нотификатор
+            alert(text);
+        }
+
+        function setButtonLoading(btn, loading = true) {
+            if (loading) {
+                btn._origHtml = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Обработка...';
+                btn.disabled = true;
+                btn.classList.add('disabled');
+            } else {
+                if (btn._origHtml) btn.innerHTML = btn._origHtml;
+                btn.disabled = false;
+                btn.classList.remove('disabled');
+            }
+        }
+
+        // ---- Обработчик кнопок подключения ----
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.btn-connect');
+            if (!btn) return;
+            e.preventDefault();
+
+            // определить действие по текущему состоянию кнопки
+            const action = btn.dataset.action || 'connect'; // connect или renew
+            const tariffType = btn.dataset.tariff;
+            const period = btn.dataset.period || 'month';
+
+            // временная блокировка UI
+            setButtonLoading(btn, true);
+
+            // таймаут через AbortController
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 15000);
+
+            (async function () {
+                        try {
+                            const resp = await fetch('/connect-tariff/', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': getCookie('csrftoken')
+                                },
+                                signal: controller.signal,
+                                body: JSON.stringify({ tariff_type: tariffType, period: period, action: action })
+                            });
+
+                            clearTimeout(timeout);
+
+                            if (resp.status === 401 || resp.status === 403) {
+                                // если пользователь не авторизован — сразу редиректим
+                                window.location.href = '/users/register?next=shop/';
+                                return;
+                            }
+
+                            if (!resp.ok) {
+                                let text = await resp.text().catch(() => '');
+                                console.error('Server error:', resp.status, text);
+                                showAlert('Ошибка сервера при подключении тарифа. Попробуйте позже.');
+                                setButtonLoading(btn, false);
+                                return;
+                            }
+
+                            const data = await resp.json();
+
+                            // Если сервер вернул confirmation_url — перенаправляем на YooKassa
+                            if (data.confirmation_url) {
+                                // не разблокируем кнопку — пользователь уходит на платёжную страницу
+                                window.location.href = data.confirmation_url;
+                                return;
+                            }
+
+                            // Если сервер вернул готовый результат (без редиректа)
+                            if (data.status === 'ok') {
+                                if (data.pricing_html) {
+                                    const wrapper = document.getElementById('pricing-section-wrapper');
+                                    if (wrapper) wrapper.innerHTML = data.pricing_html;
+                                    updatePricesForPeriod(period);
+                                } else {
+                                    const newStatus = (data.action === 'connected' || data.action === 'renewed') ? 'connected' : 'available';
+                                    updateConnectButtonByStatus(btn, newStatus, period);
+
+                                    if (data.months_left !== undefined) {
+                                        const cardBtn = document.querySelector(`.btn-connect[data-tariff="${tariffType}"]`);
+                                        if (cardBtn) {
+                                            cardBtn.dataset.statusMonth = (data.months_left >= 1) ? 'connected' : 'renew';
+                                        }
+                                    }
+                                }
+
+                                let msg = `Тариф ${data.tariff_type} подключен.`;
+                                if (data.end_date) msg += ` Действует до ${data.end_date}.`;
+                                if (data.tokens !== undefined) msg += ` Токенов: ${data.tokens}.`;
+                                if (data.message) msg += `\n\n${data.message}`;
+                                showAlert(msg);
+                                setButtonLoading(btn, false);
+                                return;
+                            }
+
+                            // В противном случае — покажем ошибку
+                            const err = data.error || 'Не удалось подключить тариф';
+                            showAlert(err);
+                            setButtonLoading(btn, false);
+                        } catch (err) {
+                            clearTimeout(timeout);
+                            console.error('Fetch error:', err);
+                            if (err.name === 'AbortError') {
+                                showAlert('Время ожидания ответа сервера истекло. Попробуйте ещё раз.');
+                            } else {
+                                showAlert('Ошибка сети или сервера при подключении тарифа.');
+                            }
+                            setButtonLoading(btn, false);
+                        }
+                    })();
+        });
+
+        // ---- Таймер скидки ----
+        document.addEventListener('DOMContentLoaded', function () {
+            {% if marketing_text and tariffs_marketing_time_left %}
+            let timeLeft = {{ tariffs_marketing_time_left }};
+            const timerEl = document.getElementById('discount-timer');
+            const marketingEl = document.getElementById('marketing-text');
+
+            if (!timerEl) return;
+
+            function renderTime(t) {
+                if (t <= 0) {
+                    timerEl.textContent = 'Скидка истекла';
+                    // Убираем бейджи скидок
+                    document.querySelectorAll('.discount-badge').forEach(b => b.remove());
+                    // Можно скрыть маркетинговый текст или заменить:
+                    if (marketingEl) {
+                        // Оставляем текст маркетинга, но помечаем что акция закончилась
+                        marketingEl.classList.remove('text-success');
+                        marketingEl.classList.add('text-muted');
+                    }
+                    return;
+                }
+
+                const days = Math.floor(t / 86400);
+                const hours = Math.floor((t % 86400) / 3600);
+                const minutes = Math.floor((t % 3600) / 60);
+                const seconds = t % 60;
+
+                const parts = [];
+                if (days > 0) {
+                    parts.push(days + 'д');
+                    if (hours > 0) parts.push(String(hours).padStart(2, '0') + 'ч');
+                } else if (hours > 0) {
+                    parts.push(String(hours).padStart(2, '0') + 'ч');
+                }
+                parts.push(String(minutes).padStart(2, '0') + 'м');
+                parts.push(String(seconds).padStart(2, '0') + 'с');
+
+                timerEl.textContent = parts.join(' ');
+                setTimeout(() => {
+                    timeLeft -= 1;
+                    renderTime(timeLeft);
+                }, 1000);
+            }
+
+            renderTime(timeLeft);
+            {% endif %}
+        });
+
+        // ---- Инициализация: установить начальный период и цены ----
+        (function initDefault() {
+            // Если есть активная кнопка — считать её, иначе month
+            let active = document.querySelector('[data-period].active') || document.querySelector('[data-period]');
+            const period = active ? active.dataset.period : 'month';
+            // Установим корректно label для dropdown (если нужен)
+            const label = document.getElementById('current-period-label');
+            if (label && active) label.textContent = active.textContent.trim();
+            updatePricesForPeriod(period);
+        })();
+
+    })();
+</script>

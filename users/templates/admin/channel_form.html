@@ -1,0 +1,8 @@
+<form method="post" action="{% url 'create_channel' %}" class="mb-3">
+    {% csrf_token %}
+    <div class="input-group">
+        <input type="text" name="name" class="form-control" placeholder="Название канала" required>
+        <input type="text" name="code" class="form-control" placeholder="Код канала" required>
+        <button class="btn btn-primary" type="submit">Создать</button>
+    </div>
+</form>

@@ -1,0 +1,187 @@
+{% extends 'articles/base.html' %}
+{% block title %}Гайд: Как вести занятия в виртуальном классе LinguaGlow{% endblock %}
+{% block description %}Научитесь создавать виртуальный класс, добавлять интерактивные уроки и приглашать учеников. Проводите занятия по английскому онлайн: индивидуальные и групповые.{% endblock %}
+{% block keywords %}Виртуальный класс, ученики, индивидуальные занятия, групповые, LinguaGlow, приглашение, видеозвонок, звонок{% endblock %}
+
+{% block article-header %}
+    <span class="fw-bold text-dark d-block">Как вести занятия в виртуальном классе LinguaGlow</span>
+    <span class="text-secondary d-block text-end" style="font-size: 0.7rem;">Интерактивная статья</span>
+    <hr>
+{% endblock %}
+
+
+
+{% block article-body %}
+    <!-- Приглашение ученика -->
+    <p class="fw-bold fs-6">Как пригласить ученика?</p>
+
+    <div class="card border-0 p-4 mb-4">
+        {% if classroom_link %}
+            {# Полное сообщение в текстовой области (для удобного копирования/редактирования) #}
+            <div class="mb-3">
+                <textarea id="inviteMessage" class="form-control" rows="4">Привет! Присоединяйся к моему онлайн классу: {{ classroom_link }}</textarea>
+                <label for="inviteMessage" class="form-label small text-muted">Можно выделить и отредактировать</label>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <button id="shareBtn" class="btn btn-primary">
+                    Поделиться
+                </button>
+
+                <button id="copyBtn" class="btn btn-secondary">Копировать</button>
+
+                <a href="{{ classroom_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-success">
+                    Перейти в класс
+                </a>
+
+                <small id="copyStatus" class="ms-2 text-success" style="display:none;">Скопировано!</small>
+            </div>
+        {% else %}
+            <div class="alert alert-warning mb-0">Перейдите на тариф Премиум/Максимум для создания классов.</div>
+        {% endif %}
+    </div>
+
+    <div class="mb-4">
+        <ol>
+            <li>Отправьте готовое сообщение ученику.</li>
+            <li>Нажмите "Перейти в класс" и ожидайте, пока ученик присоединится.</li>
+        </ol>
+    </div>
+
+    <script>
+    (function () {
+        const copyBtn = document.getElementById('copyBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const copyStatus = document.getElementById('copyStatus');
+        const textarea = document.getElementById('inviteMessage');
+
+        // данные из шаблона (безопасно для JS)
+        const link = "{{ classroom_link|escapejs }}";
+        const inviteText = "{{ invite_message|default:'Привет! Присоединяйся к моему виртуальному классу:'|escapejs }}";
+        const fullMessage = inviteText + " " + link;
+
+        // Подставляем в textarea (на случай, если шаблон рендерится без value по каким-то причинам)
+        if (textarea && !textarea.value) {
+            textarea.value = fullMessage;
+        }
+
+        if (copyBtn) {
+            copyBtn.addEventListener('click', async () => {
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(fullMessage);
+                    } else {
+                        // fallback
+                        textarea.removeAttribute('readonly');
+                        textarea.select();
+                        document.execCommand('copy');
+                        textarea.setAttribute('readonly', true);
+                        // сброс выделения
+                        window.getSelection().removeAllRanges();
+                    }
+                    copyStatus.style.display = 'inline';
+                    copyStatus.textContent = 'Скопировано!';
+                    setTimeout(() => copyStatus.style.display = 'none', 2500);
+                } catch (err) {
+                    copyStatus.style.display = 'inline';
+                    copyStatus.classList.remove('text-success');
+                    copyStatus.classList.add('text-danger');
+                    copyStatus.textContent = 'Не удалось скопировать';
+                    setTimeout(() => {
+                        copyStatus.style.display = 'none';
+                        copyStatus.classList.remove('text-danger');
+                        copyStatus.classList.add('text-success');
+                    }, 3500);
+                }
+            });
+        }
+
+        if (shareBtn) {
+            shareBtn.addEventListener('click', () => {
+                if (navigator.share) {
+                    navigator.share({
+                        title: document.title,
+                        text: inviteText,
+                        url: link
+                    }).catch(() => {
+                        // отмена/ошибка — не показываем ничего
+                    });
+                } else {
+                    // фолбек: Telegram + текст
+                    const encoded = encodeURIComponent(fullMessage);
+                    const tg = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encoded}`;
+                    window.open(tg, '_blank', 'noopener');
+                }
+            });
+        }
+    })();
+    </script>
+
+
+
+
+    <!-- Присоединение к видеозвонку -->
+    <p class="fw-bold fs-6 mt-5">Как начать видеозвонок?</p>
+
+    <p class="text-secondary" style="font-size: 0.7rem">На этом этапе вы уже должны быть в виртуальном классе</p>
+
+    <div class="mb-4">
+        <ol>
+            <li>На компьютерах - нажмите кнопку <span class="fw-bold text-primary">Присоединиться</span></li>
+            <li>На телефонах - нажмите 3 точки снизу справа, далее <span class="fw-bold text-primary">Присоединиться</span></li>
+            <li>Разрешите доступ к камере/микрофону</li>
+            <li>Что-то не работает - <a href="mailto:linguaglow0@gmail.com">напишите нам</a></li>
+        </ol>
+    </div>
+
+
+
+    <!-- Как взаимодействовать с учеником -->
+    <p class="fw-bold fs-6 mt-5">Как управлять вниманием учеников?</p>
+
+    <p class="text-secondary" style="font-size: 0.7rem">На этом этапе вы уже должны быть в виртуальном классе</p>
+
+    <div class="mb-4">
+        <ol>
+            <li>Используйте кнопку <i class="bi bi-broadcast text-dark mx-1 d-inline rounded shadow p-2"></i> - она покажет всем ученикам класса ваше задание.</li>
+            <li>Разрешайте или запрещайте копирование (три точки снизу справа)</li>
+            <li>Обновляйте страницу (если добавили новые задания или удалили старые). Без обновления страницы ученики не увидят изменений.</li>
+        </ol>
+    </div>
+{% endblock %}
+
+
+
+
+{% block article-footer %}
+    <hr class="mt-5">
+
+    <div class="m-3 p-3 rounded shadow bg-white">
+        <p class="fw-bold mb-2">Научиться создавать:</p>
+        <ul class="list-unstyled ps-3 mb-3">
+            <li class="mb-1">
+                <i class="bi bi-lightning-charge-fill text-warning me-2"></i>
+                Готовый урок за 2 клика
+            </li>
+            <li class="mb-1">
+                <i class="bi bi-layout-text-sidebar-reverse text-primary me-2"></i>
+                Разделы по шаблонам, которые вам понравятся
+            </li>
+            <li class="mb-1">
+                <i class="bi bi-intersect text-success me-2"></i>
+                Интерактивные задания по материалам учебника
+            </li>
+        </ul>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="text-secondary small">
+                <span class="badge bg-success me-1">
+                    <i class="bi bi-clock me-1"></i> 3 минуты
+                </span>
+            </span>
+            <a href="{% url 'course_guide' %}" target="_blank" class="btn btn-primary rounded d-flex align-items-center">
+                <i class="bi bi-arrow-right-circle me-2"></i> Перейти
+            </a>
+        </div>
+    </div>
+{% endblock %}

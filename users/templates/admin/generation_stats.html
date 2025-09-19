@@ -1,0 +1,81 @@
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% else %}
+<div class="bg-white mb-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <form method="get" class="mb-4">
+                <div class="row">
+                    <div class="col-md-3 col-12 mb-3">
+                        <label class="font-weight-bold">Период</label>
+                        <div class="input-group input-group-sm">
+                            <select name="period" class="form-control">
+                                {% for value, label in period_choices %}
+                                    <option value="{{ value }}" {% if current_period == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-12 mb-3">
+                        <label class="font-weight-bold">Тип генерации</label>
+                        <div class="input-group input-group-sm">
+                            <select name="type" class="form-control">
+                                <option value="">Все типы</option>
+                                {% for value, label in type_choices %}
+                                    <option value="{{ value }}" {% if current_type == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-auto align-self-end mb-3">
+                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                            <i class="fas fa-filter mr-1"></i> Применить
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-dark bg-primary text-white">
+                        <tr>
+                            <th>Тип</th>
+                            <th>Успешные</th>
+                            <th>Неуспешные</th>
+                            <th>Ошибки</th>
+                            <th>Дата</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in stats %}
+                        <tr>
+                            <td>
+                                <span class="badge text-dark">{{ stat.get_type_display }}</span>
+                            </td>
+                            <td class="text-success font-weight-bold">{{ stat.successful_generations }}</td>
+                            <td class="text-danger font-weight-bold">{{ stat.unsuccessful_generations }}</td>
+                            <td class="text-muted small" title="{{ stat.error_text }}">{{ stat.error_text|truncatechars:50 }}</td>
+                            <td><span class="badge text-dark">{{ stat.created_at|date:"d.m.Y H:i" }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                <i class="fas fa-info-circle mr-1"></i> Нет данных за выбранный период
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endif %}

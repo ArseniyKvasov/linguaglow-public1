@@ -1,0 +1,160 @@
+{% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+{% else %}
+    <div class="card p-4 m-2">
+        <form method="get" class="mb-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <input type="text" name="q" class="form-control" placeholder="Поиск (ID, username, email)" value="{{ request.GET.q }}">
+                </div>
+                <div class="col-md-2">
+                    <select name="role" class="form-control">
+                        <option value="">Все роли</option>
+                        <option value="student" {% if request.GET.role == "student" %}selected{% endif %}>Ученик</option>
+                        <option value="teacher" {% if request.GET.role == "teacher" %}selected{% endif %}>Учитель</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="tariff_type" class="form-control">
+                        <option value="">Все тарифы</option>
+                        <option value="free" {% if request.GET.tariff_type == "free" %}selected{% endif %}>Бесплатный</option>
+                        <option value="basic" {% if request.GET.tariff_type == "basic" %}selected{% endif %}>Базовый</option>
+                        <option value="premium" {% if request.GET.tariff_type == "premium" %}selected{% endif %}>Премиум</option>
+                        <option value="maximum" {% if request.GET.tariff_type == "maximum" %}selected{% endif %}>Максимум</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="tariff_status" class="form-control">
+                        <option value="">Все статусы</option>
+                        <option value="active" {% if request.GET.tariff_status == "active" %}selected{% endif %}>Активен</option>
+                        <option value="expired" {% if request.GET.tariff_status == "expired" %}selected{% endif %}>Истёк</option>
+                        <option value="none" {% if request.GET.tariff_status == "none" %}selected{% endif %}>Нет тарифа</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="onboarding_status" class="form-control">
+                        <option value="">Все статусы онбординга</option>
+                        <option value="completed" {% if request.GET.onboarding_status == "completed" %}selected{% endif %}>Завершен</option>
+                        <option value="in_progress" {% if request.GET.onboarding_status == "in_progress" %}selected{% endif %}>В процессе</option>
+                        <option value="new" {% if request.GET.onboarding_status == "new" %}selected{% endif %}>Новые пользователи</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Применить фильтры</button>
+                <a href="?" class="btn btn-secondary">Сбросить</a>
+            </div>
+        </form>
+
+        <p class="mb-2"><strong>Найдено пользователей:</strong> {{ total_count }}</p>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" style="background-color: #fffbe6;">
+                <thead class="thead-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Роль</th>
+                        <th>Новый</th>
+                        <th>Тариф</th>
+                        <th>Срок действия</th>
+                        <th>Статус тарифа</th>
+                        <th>Этап онбординга</th>
+                        <th>Статус онбординга</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in users %}
+                        <tr>
+                            <td>{{ row.user.id }}</td>
+                            <td>{{ row.user.username }}</td>
+                            <td>{{ row.user.email }}</td>
+
+                            <td>
+                                <span class="badge {% if row.user.role == 'teacher' %}bg-primary{% else %}bg-info{% endif %}">
+                                    {{ row.user.get_role_display }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                {% if row.is_new %}
+                                    <span class="badge bg-success">✓</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.tariff_type_value %}
+                                    <span class="badge
+                                        {% if row.tariff_type_value == 'free' %}bg-secondary
+                                        {% elif row.tariff_type_value == 'basic' %}bg-info
+                                        {% elif row.tariff_type_value == 'premium' %}bg-warning text-dark
+                                        {% elif row.tariff_type_value == 'maximum' %}bg-danger
+                                        {% else %}bg-light text-dark{% endif %}">
+                                        {{ row.tariff_type }}
+                                    </span>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.period_start and row.period_end %}
+                                    {{ row.period_start|date:"d.m.Y" }} – {{ row.period_end|date:"d.m.Y" }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge
+                                    {% if row.status == 'Активный' %}bg-success
+                                    {% elif row.status == 'Неоплаченный' %}bg-warning text-dark
+                                    {% elif row.status == 'Нет тарифа' %}bg-secondary
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ row.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if row.current_step and row.current_step != '—' %}
+                                    <span class="badge
+                                        {% if row.current_step == 'generation_feedback' %}bg-success
+                                        {% elif row.current_step == 'hello' %}bg-primary
+                                        {% elif row.current_step == 'incorrect' %}bg-danger
+                                        {% else %}bg-warning text-dark{% endif %}">
+                                        {{ row.current_step|title }}
+                                    </span>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if row.onboarding_status %}
+                                    <span class="badge bg-success">Завершен</span>
+                                {% elif row.current_step and row.current_step != '—' %}
+                                    <span class="badge bg-warning text-dark">В процессе</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Не начат</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="11" class="text-center">Пользователи не найдены.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if not show_all and total_count > 5 %}
+            <form method="get">
+                {% for key, value in request.GET.items %}
+                    {% if key != "show_all" %}
+                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                    {% endif %}
+                {% endfor %}
+                <input type="hidden" name="show_all" value="1">
+                <button type="submit" class="btn btn-warning">Показать все ({{ total_count }})</button>
+            </form>
+        {% endif %}
+    </div>
+{% endif %}

@@ -1,0 +1,100 @@
+{% extends 'builder/updated_templates/base.html' %}
+
+{% load static %}
+
+{% block title %} LinguaGlow {% endblock %}
+
+{% block content %}
+    <div id="classroomId" class="d-none" data-classroom-id="{{ classroom_id }}"></div>
+
+    <!-- Панель действий -->
+    <div id="homeworkActions"
+         class="panel position-fixed bottom-0 end-0 m-4 bg-white shadow rounded d-flex align-items-center gap-2"
+         style="z-index: 1050;">
+
+        {% if role == "teacher" %}
+            {% if status != "checked" %}
+                <!-- Отметить проверено -->
+                <button type="button"
+                        class="btn border-0 p-3"
+                        onclick="sendHomework('checked')"
+                        title="Отметить проверено">
+                    <i class="bi bi-check-circle-fill bi-lg text-success"></i>
+                </button>
+            {% endif %}
+
+            {% if status != "resent" and status != "sent" %}
+                <!-- Отправить на доработку -->
+                <button type="button"
+                        class="btn border-0 p-3"
+                        onclick="sendHomework('resent')"
+                        title="Отправить на доработку">
+                    <i class="bi bi-arrow-repeat bi-lg text-warning"></i>
+                </button>
+            {% endif %}
+
+        {% elif role == "student" %}
+            {% if status != "checked" and status != "completed" %}
+                <!-- Отправить учителю -->
+                <button type="button"
+                        class="btn border-0 p-3"
+                        onclick="sendHomework('completed')"
+                        title="Отправить учителю">
+                    <i class="bi bi-send-fill bi-lg text-primary"></i>
+                </button>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <script src="{% static 'updated_functions/classroom.js' %}?v=10"></script>
+
+    <script>
+        function sendHomework(status) {
+            const classroomId = mainContainer.dataset.classroomId;
+            const lessonId = mainContainer.dataset.lessonId;
+            const submitHomeworkUrl = mainContainer.dataset.submitHomeworkUrl;
+
+            fetch(submitHomeworkUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({
+                    classroom_id: classroomId,
+                    lesson_id: lessonId,
+                    status: status
+                }),
+            })
+            .then(resp => {
+                if (!resp.ok) throw new Error('Не удалось изменить статус');
+                return resp.json();
+            })
+            .then(data => {
+                // Отключаем все кнопки в панели
+                document.querySelectorAll('#homeworkActions button')
+                        .forEach(btn => btn.disabled = true);
+
+                let message = '';
+                switch (status) {
+                    case 'completed':
+                        message = "Отправлено учителю! Можешь доделать, если нужно.";
+                        break;
+                    case 'resent':
+                        message = "Отправлено на доработку.";
+                        break;
+                    case 'checked':
+                        message = "Помечено как проверенное.";
+                        break;
+                }
+                setTimeout(() => {
+                    showNotification(message, "success");
+                }, 500);
+            })
+            .catch(err => {
+                console.error(err);
+                showNotification("Ошибка при изменении статуса.", "danger");
+            });
+        }
+    </script>
+{% endblock %}

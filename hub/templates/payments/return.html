@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Статус оплаты | LinguaGlow</title>
+    <meta http-equiv="refresh" content="5"> <!-- Автообновление каждые 5 сек -->
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Google Fonts: Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <style>
+        :root {
+            --lg-primary: #4361ee;
+            --lg-secondary: #6c757d;
+            --lg-success: #20c997;
+            --lg-light-bg: #f8f9fa;
+            --lg-border: #e9ecef;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f9fafb;
+            color: #212529;
+            line-height: 1.6;
+        }
+
+        .status-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .payment-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .payment-details {
+            background-color: var(--lg-light-bg);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--lg-border);
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .benefit-icon {
+            background: rgba(32, 201, 151, 0.1);
+            color: var(--lg-success);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .countdown {
+            font-size: 0.9rem;
+            color: var(--lg-secondary);
+            margin-top: 1rem;
+        }
+
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .status-container {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="container py-4 py-md-5">
+        <div class="status-container text-center">
+            <!-- Иконка статуса -->
+            {% if payment.status == 'completed' or provider_status == 'succeeded' %}
+            <div class="payment-icon text-success">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="status-badge bg-success bg-opacity-10 text-success d-inline-block mb-3">
+                <i class="bi bi-check-lg me-1"></i> Оплата прошла успешно
+            </div>
+            {% else %}
+            <div class="payment-icon text-warning">
+                <i class="bi bi-arrow-repeat"></i>
+            </div>
+            <div class="status-badge bg-warning bg-opacity-10 text-warning d-inline-block mb-3">
+                <i class="bi bi-clock me-1"></i> Ожидание подтверждения
+            </div>
+            {% endif %}
+
+            <h1 class="h3 fw-bold mb-3">
+                {% if payment.status == 'completed' or provider_status == 'succeeded' %}
+                Готово! Ваш аккаунт обновлён
+                {% else %}
+                Проверяем ваш платёж
+                {% endif %}
+            </h1>
+
+            <p class="text-muted mb-4">
+                {% if payment.status == 'completed' or provider_status == 'succeeded' %}
+                Спасибо за доверие! Теперь у вас есть доступ ко всем возможностям LinguaGlow.
+                {% else %}
+                Обычно это занимает не более пары минут. Страница обновится автоматически.
+                {% endif %}
+            </p>
+
+            <!-- Детали платежа -->
+            <div class="payment-details text-start">
+                <div class="detail-item">
+                    <span class="text-muted">Номер заказа:</span>
+                    <span class="fw-medium">{{ payment.id }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="text-muted">ID транзакции:</span>
+                    <span class="fw-medium">{{ payment.transaction_id }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="text-muted">Статус:</span>
+                    <span class="fw-medium">{{ payment.get_status_display }}</span>
+                </div>
+                {% if payment.status == 'completed' or provider_status == 'succeeded' %}
+                <div class="detail-item">
+                    <span class="text-muted">Приобретено:</span>
+                    <span class="fw-medium">
+                        {% if payment.payment_type == 'token_pack' %}
+                        {{ payment.token_amount }} токенов
+                        {% else %}
+                        Подписка до {{ payment.period_end }}
+                        {% endif %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Сообщение в зависимости от статуса -->
+            {% if payment.status != 'completed' and provider_status != 'succeeded' %}
+            <div class="alert alert-warning text-start">
+                <div class="d-flex">
+                    <div class="me-2"><i class="bi bi-info-circle"></i></div>
+                    <div>
+                        <span class="fw-medium">Платёж обрабатывается</span>
+                        <p class="mb-0 small">Если вы уже оплатили, дождитесь обработки транзакции. Обычно это занимает несколько минут.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="countdown">
+                <i class="bi bi-arrow-clockwise"></i> Автообновление через 5 секунд...
+            </div>
+            {% else %}
+            <!-- Преимущества после успешной оплаты -->
+            <div class="mt-4">
+                <h2 class="h5 fw-bold mb-3">Теперь вам доступно:</h2>
+
+                <div class="features-grid">
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="bi bi-lightning"></i>
+                        </div>
+                        <div class="text-start">
+                            <div class="fw-medium">Мгновенная генерация уроков</div>
+                            <div class="small text-muted">Создавайте увлекательные занятия за 2 клика</div>
+                        </div>
+                    </div>
+
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="bi bi-journal-richtext"></i>
+                        </div>
+                        <div class="text-start">
+                            <div class="fw-medium">Интерактивные учебники</div>
+                            <div class="small text-muted">Превращайте PDF в интерактивные материалы</div>
+                        </div>
+                    </div>
+
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <div class="text-start">
+                            <div class="fw-medium">AI-помощник</div>
+                            <div class="small text-muted">Умные подсказки и генерация контента</div>
+                        </div>
+                    </div>
+
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div class="text-start">
+                            <div class="fw-medium">Виртуальный класс</div>
+                            <div class="small text-muted">Комфортная работа с учениками</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <a href="{% url 'home' %}" class="action-btn btn btn-primary me-2">
+                        <i class="bi bi-rocket me-1"></i> Начать использовать
+                    </a>
+                    <a href="{% url 'home' %}" class="action-btn btn btn-outline-primary">
+                        <i class="bi bi-journal-plus me-1"></i> Создать урок
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Дополнительная информация -->
+        <div class="status-container mt-4">
+            <h2 class="h5 fw-bold mb-3">Нужна помощь?</h2>
+            <p class="text-muted">Если у вас возникли вопросы по поводу платежа или работы платформы, наша команда поддержки всегда готова помочь.</p>
+
+            <div class="d-flex gap-3 justify-content-center mt-3">
+                <a href="mailto:linguaglow0@gmail.com?subject=Оплата&body=Здравствуйте! У меня возникла проблема с оплатой..." class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-envelope me-1"></i> Написать в поддержку
+                </a>
+
+                <a href="{% url 'home' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-house me-1"></i> Домой
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

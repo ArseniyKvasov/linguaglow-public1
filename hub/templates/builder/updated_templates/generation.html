@@ -1,0 +1,253 @@
+{% extends 'builder/updated_templates/base.html' %}
+
+{% load static %}
+{% load custom_filters %}
+{% load custom_tags %}
+
+{% block title %} LinguaGlow {% endblock %}
+
+{% block content %}
+    <!-- Модальное окно выбора класса -->
+    <div class="modal fade" id="classroomModal" tabindex="-1" aria-labelledby="classroomModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-white border-bottom-0 px-4 pt-4">
+                    <h5 class="modal-title fw-semibold" id="classroomModalLabel">Добавить урок в класс</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+
+                <div class="modal-body px-4">
+                    {% if classrooms %}
+                    <form id="chooseClassroomForm" method="POST" action="{% url 'choose_classroom' lesson.id %}">
+                        {% csrf_token %}
+                        <h6 class="text-muted mb-3">Выберите существующий класс</h6>
+
+                        <ul class="list-unstyled mb-4">
+                            {% for classroom in classrooms %}
+                                <li class="mb-2">
+                                    <label class="card classroom-card p-3 d-flex align-items-center border border-light-subtle rounded-3 shadow-sm">
+                                        <input type="radio" name="classroom_id" class="d-none" value="{{ classroom.id }}">
+                                        <span class="text-muted mb-0">
+                                            <i class="bi bi-book me-2"></i>{{ classroom.name }}
+                                        </span>
+                                    </label>
+                                </li>
+                            {% endfor %}
+                        </ul>
+
+                        <button type="submit" class="btn btn-success w-100 mb-4">
+                            <i class="bi bi-check-circle me-2"></i> Перейти в класс
+                        </button>
+                    </form>
+
+                    <div class="text-center text-muted mb-3">или</div>
+                    {% endif %}
+
+                    <form id="createClassroomForm" method="POST" action="{% url 'create_classroom_with_lesson' lesson.id %}">
+                        {% csrf_token %}
+                        <h6 class="text-muted mb-3">Создайте новый класс</h6>
+
+                        <!-- Поле для ввода названия класса -->
+                        <div class="input-group mb-3">
+                            <input type="text" name="name" id="id_name" class="form-control" placeholder="Название класса" required>
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+
+                        <!-- Скрытое поле для ID учителя -->
+                        <input type="hidden" name="teacher" value="{{ request|get_current_user }}">
+
+                        <!-- Опционально: Сообщение об ошибках -->
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                Пожалуйста, исправьте следующие ошибки:
+                                <ul>
+                                    {% for field, errors in form.errors.items %}
+                                        {% for error in errors %}
+                                            <li>{{ field|title }}: {{ error }}</li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+
+                <div class="modal-footer border-top-0 px-4 pb-4">
+                    <button type="button" class="btn border-0 w-100 text-end" data-bs-dismiss="modal">
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% show_lesson_modal %}
+
+    {% if is_new %}
+    <!-- Floating Help Button -->
+    <button class="btn btn-light border rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center"
+            id="helpBtn"
+            style="position: fixed; bottom: 20px; left: 20px; width: 45px; height: 45px; z-index: 1050;">
+        <i class="bi bi-question-lg fs-4 text-secondary"></i>
+    </button>
+
+    <!-- Help Window -->
+    <div id="helpWindow" class="card border-0 shadow-sm"
+         style="display: none; position: fixed; bottom: 80px; left: 20px;
+                max-width: 320px; max-height: 70vh; width: 300px;
+                z-index: 1050; overflow-y: auto;">
+
+        <!-- Header -->
+        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+            <span class="fw-semibold text-dark fs-6">Справка</span>
+            <button type="button" class="btn-close btn-sm" id="helpClose"></button>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body p-0">
+            <div class="accordion accordion-flush" id="helpAccordion">
+                <!-- Generate Task -->
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-2 px-3 text-dark bg-light"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                            <i class="bi bi-lightning-charge me-2 text-warning"></i>
+                            Генерация задания
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body px-3 py-2 small text-muted">
+                            Нажмите
+                            <button class="btn btn-outline-primary btn-sm border-0 p-0 fw-medium ms-1"
+                                    onclick="document.getElementById('add-task-button-wrapper')?.scrollIntoView({behavior: 'smooth', block: 'center'});">
+                                + Добавить задание
+                            </button>
+                            и кнопку
+                            <span class="badge bg-primary text-white ms-1">
+                                <i class="bi bi-lightning-charge"></i>
+                            </span>
+                            (доступно не во всех типах заданий)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generate Section -->
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-2 px-3 text-dark bg-light"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                            <i class="bi bi-collection me-2 text-primary"></i>
+                            Генерация раздела
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body px-3 py-2 small text-muted">
+                            Нажмите
+                            <button class="btn btn-outline-primary btn-sm border-0 p-0 fw-medium ms-1"
+                                    onclick="new bootstrap.Modal(document.getElementById('sectionChoiceModal')).show(); document.getElementById('helpWindow').style.display='none';">
+                                + Добавить раздел
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Download PDF -->
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-2 px-3 text-dark bg-light"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                            <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>
+                            Скачать PDF
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body px-3 py-2 small text-muted">
+                            В правом нижнем углу нажмите
+                            <span class="badge bg-light text-dark ms-1">
+                                <i class="bi bi-filetype-pdf"></i>
+                            </span>
+                            или
+                            <a href="{% url 'download_pdf' lesson.id %}" class="text-decoration-none text-primary fw-medium ms-1">
+                                перейдите по ссылке
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generate Lesson -->
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-2 px-3 text-dark bg-light"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                            <i class="bi bi-journal-plus me-2 text-success"></i>
+                            Генерация урока
+                        </button>
+                    </h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body px-3 py-2 small text-muted">
+                            <a href="{% url 'lesson_list' course_id %}" class="text-decoration-none text-primary fw-medium">
+                                Перейдите к списку уроков
+                            </a>
+                            и нажмите на кнопку "+ Добавить урок"
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer bg-white border-0 py-3 d-flex justify-content-between small">
+            <a href="{% url 'home' %}" class="text-decoration-none text-muted hover-text-primary">
+                <i class="bi bi-house me-1"></i>Главная
+            </a>
+            <a href="mailto:linguaglow0@gmail.com" class="text-decoration-none text-muted hover-text-primary">
+                <i class="bi bi-envelope me-1"></i>Поддержка
+            </a>
+        </div>
+    </div>
+
+    <!-- Add this CSS for hover effects -->
+    <style>
+        .hover-text-primary:hover {
+            color: #0d6efd !important;
+        }
+        .accordion-button:not(.collapsed) {
+            background-color: #f8f9fa;
+            box-shadow: none;
+        }
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: rgba(0,0,0,.125);
+        }
+        .btn-outline-primary {
+            color: #0d6efd;
+            background-color: transparent;
+        }
+        .btn-outline-primary:hover {
+            color: #fff;
+            background-color: #0d6efd;
+        }
+    </style>
+
+    <!-- JS toggle -->
+    <script>
+        const helpBtn = document.getElementById("helpBtn");
+        const helpWindow = document.getElementById("helpWindow");
+        const helpClose = document.getElementById("helpClose");
+
+        helpBtn.addEventListener("click", () => {
+            helpWindow.style.display = "block";
+        });
+
+        helpClose.addEventListener("click", () => {
+            helpWindow.style.display = "none";
+        });
+    </script>
+    {% endif %}
+
+
+
+    <div id="info" data-tokens="{{ tokens }}"></div>
+{% endblock %}

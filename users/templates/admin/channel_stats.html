@@ -1,0 +1,32 @@
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Канал</th>
+            <th>Регистрации</th>
+            <th>Покупки</th>
+            <th>Доход</th>
+            <th>Ссылка</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ch in channels %}
+        <tr>
+            <td>{{ ch.name }}</td>
+            <td>{{ ch.registrations|default:0 }}</td>
+            <td>{{ ch.purchases|default:0 }}</td>
+            <td>{{ ch.revenue|default:0 }}</td>
+            <td>
+                <input type="text" class="form-control" readonly
+                    value="{{ request.scheme }}://{{ request.get_host }}/?ref={{ ch.code }}">
+            </td>
+            <td>
+                <form method="post" action="{% url 'delete_channel' ch.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

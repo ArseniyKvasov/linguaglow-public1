@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Statistics - LinguaGlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    {% load custom_users_tags %}
+    {% load static %}
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+</head>
+<body>
+
+    <div class="container my-5">
+        <h2 class="mb-4">Заявки Arseniy</h2>
+        {% arseniy_applications %}
+    </div>
+
+    <div class="m-2 mb-4 mt-4">
+        <h2 class="text-center fw-bold mb-3">StudyNote</h2>
+        {% render_responses %}
+    </div>
+
+    <div class="m-2 mb-4 mt-4">
+        <h2 class="text-center fw-bold mb-3">Генерации</h2>
+        {% generation_stats %}
+    </div>
+
+    <div class="m-2 mb-4">
+        <h2 class="text-center fw-bold mb-3">Сообщения пользователей</h2>
+        {% site_error_logs %}
+    </div>
+
+    <div class="m-2 mb-4">
+        <h2 class="text-center fw-bold mb-3">Платежи</h2>
+        {% payment_stats %}
+    </div>
+
+    <div class="m-2 mb-4">
+        <h2 class="text-center fw-bold mb-3">Тарифы пользователей</h2>
+        {% user_tariffs %}
+    </div>
+
+    <div class="m-2 mb-4">
+        <h2 class="text-center fw-bold mb-3">Метрики</h2>
+        {% user_metrics %}
+    </div>
+
+    <div class="m-2 mb-4">
+        <h2 class="text-center fw-bold mb-3">Общие метрики</h2>
+        {% user_metrics_summary %}
+    </div>
+
+    <div class="m-2 mb-4">
+        <h2 class="text-center fw-bold mb-3">Метрики тг-бота</h2>
+        {% telegram_user_metrics %}
+    </div>
+
+    <div class="m-2 mb-4">
+        <h2 class="text-center fw-bold">Уведомления</h2>
+        <div class="card p-2">
+            <form method="post" class="mb-5">
+                {% csrf_token %}
+
+                <div class="form-floating mb-3">
+                    {{ notification_form.title }}
+                    <label for="{{ notification_form.title.id_for_label }}">Заголовок</label>
+                    {{ notification_form.title.errors }}
+                </div>
+
+                <div class="form-floating mb-3">
+                    {{ notification_form.message }}
+                    <label for="{{ notification_form.message.id_for_label }}">Текст</label>
+                    {{ notification_form.message.errors }}
+                </div>
+
+                <div class="form-floating mb-3">
+                    {{ notification_form.link }}
+                    <label for="{{ notification_form.link.id_for_label }}">Ссылка</label>
+                    {{ notification_form.link.errors }}
+                </div>
+
+                <div class="form-check form-switch mb-3">
+                    {{ notification_form.is_active }}
+                    {{ notification_form.is_active.label_tag }}
+                    {{ notification_form.is_active.errors }}
+                </div>
+
+                <div class="mb-3">
+                    {{ notification_form.target_roles.label_tag }}
+                    {{ notification_form.target_roles }}
+                    {{ notification_form.target_roles.errors }}
+                </div>
+
+                {% if success_message %}
+                    <p class="text-success fw-bold">Удалось показать уведомление пользователям с ролями: {{ success_message }}</p>
+                {% elif error_message %}
+                    <p class="text-danger fw-bold">Произошла ошибка: {{ error_message }}</p>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary w-100">Сохранить уведомление</button>
+            </form>
+
+            {% if notifications %}
+                <div class="border-top pt-4">
+                    <h5 class="fw-semibold mb-3">Существующие уведомления:</h5>
+                    {% for note in notifications %}
+                        <div class="alert alert-light border d-flex justify-content-between align-items-start mb-3" role="alert">
+                            <div class="flex-grow-1">
+                                <div class="fw-bold mb-1">{{ note.title }}</div>
+                                <div class="mb-1 small text-muted">{{ note.message }}</div>
+                                {% if note.link %}
+                                    <div><a href="{{ note.link }}" target="_blank" class="small link-primary">Подробнее</a></div>
+                                {% endif %}
+                                <div class="small text-secondary mt-1">Роли: {{ note.target_roles }}</div>
+                            </div>
+                            <form method="post" action="{% url 'delete_notification' note.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-close" aria-label="Удалить"></button>
+                            </form>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted">Нет созданных уведомлений.</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="m-2 mb-4">
+        <h2 class="text-center fw-bold mb-3">Отправка почты</h2>
+        {% render_email_templates %}
+    </div>
+
+    <div class="m-2 mb-4">
+        <h2 class="text-center fw-bold">Рекламная кампания</h2>
+        <div class="card p-2">
+            <h3>Статистика каналов</h3>
+            {% channel_stats %}
+
+            <h3>Создать новый канал</h3>
+            {% create_channel_form %}
+        </div>
+    </div>
+
+    <div class="m-2 mb-4">
+        <h2 class="text-center fw-bold">Промокоды</h2>
+        <div class="card p-2">
+            <h3>Неактивированные промокоды</h3>
+            {% promo_stats %}
+
+            <h3>Создать новый промокод</h3>
+            {% create_promo_form %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

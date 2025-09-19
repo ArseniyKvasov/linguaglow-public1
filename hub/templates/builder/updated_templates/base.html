@@ -1,0 +1,610 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'updated_functions/styles/common.css' %}">
+    {% if user_role == 'teacher' %}
+        <link rel="stylesheet" href="{% static 'updated_functions/styles/teacher.css' %}">
+    {% endif %}
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <style>
+        body {
+            font-family: 'Montserrat', 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=103833195', 'ym');
+
+        ym(103833195, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/103833195" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+
+    <form style="display: none;">{% csrf_token %}</form>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm rounded-bottom sticky-top" style="z-index: 10;">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+            <a class="navbar-brand text-primary fw-bold" href="{% url 'home' %}">LinguaGlow</a>
+            <a href="{% url 'home' %}" class="text-decoration-none fw-bold d-flex align-items-center gap-2">
+                <i class="bi bi-person-circle"></i>
+                Главная
+            </a>
+        </div>
+    </nav>
+
+    {% csrf_token %}
+
+    <div class="row m-1 m-lg-4 mt-4 d-flex justify-content-center">
+        <!-- Основной контент страницы -->
+        <div id="main-container" class="col-12 col-xl-9 z-1" data-lesson-id="{{ lesson.id }}" data-lesson-name="{{ lesson.name }}" data-section-id="{{ section_list.first.id }}" data-user-role="{{ user_role }}" data-mode="{{ mode }}" data-user-id="{{ user_id }}" data-username="{{ request.user.username }}" data-copying-mode="{{ classroom.features.copying | lower }}" data-course-id="{{ course_id }}" data-classroom-id="{{ classroom_id }}" data-submit-homework-url="{% url 'submit_homework' %}" data-jitsi-token="{{ jitsi_token }}" style="z-index: 1;">
+            <div id="task-list">
+                {% for task in tasks %}
+                    <div class="align-items-start m-3 full-task-container" style="display: none;">
+                        {% if user_role == 'teacher' %}
+                            <div class="drag-handle me-3" style="cursor: grab; display: none;">
+                                <i class="bi bi-grip-vertical"></i>
+                            </div>
+                        {% endif %}
+                        <div class="task-item card border-0 rounded flex-grow-1"
+                             id="{{ task.id }}"
+                             data-section-id="{{ task.section.id }}"
+                             data-task-type="{{ task.content_type.model }}">
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if user_role == "teacher" %}
+            <div id="task-creation">
+                <div id="add-task-button-wrapper">
+                    <button class="btn btn-outline-primary w-100 p-4 fs-5 fw-bold shadow-sm border-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Добавить задание
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Контейнер с вкладками и секциями -->
+        <div class="row col-12 col-xl-3 mt-4 mt-xl-0 mb-4 d-flex flex-column z-1">
+            <div id="secondary-container">
+                <div class="d-flex flex-column" style="max-height: calc(100vh - 100px); overflow: hidden;">
+                    {% if mode == "classroom" %}
+                        <!-- Кнопка "Присоединиться" -->
+                        <button class="btn btn-primary w-100 join-desktop-btn p-2 mb-3 d-none d-xl-block fw-bold">Присоединиться</button>
+                    {% endif %}
+
+                    <div class="card shadow-sm rounded p-3 mb-3 {% if mode == 'classroom' or mode == 'homework' %} d-none {% else %} d-none d-xl-flex {% endif %}" style="max-height: 40vh;">
+                        <!-- Контент, который скроллится -->
+                        <div class="context-window overflow-y-auto" style="max-height: calc(40vh - 60px);">
+                            <p class="permanent-context-text text-muted text-center m-0 py-2">
+                                Добавьте задания в контекст, чтобы генерировать план урока на их основе.
+                            </p>
+                        </div>
+
+                        <!-- Кнопка Заметка — прикреплена к низу скролл-блока -->
+                        <div class="sticky-bottom-wrapper bg-white pt-1 mt-1"
+                            style="position: sticky; bottom: 0; z-index: 2; box-shadow: 0 -4px 6px -4px rgba(0,0,0,0.1);">
+                            <button class="addTextContentButton btn btn-sm text-primary border-0 fw-bold w-100 text-start">
+                                <i class="bi bi-plus-circle me-1"></i> Заметка
+                            </button>
+                            <div class="noteContainer w-80 mx-auto d-flex align-items-center gap-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Разделы -->
+                    <div class="card shadow-sm border-0 rounded" style="max-height: calc(50vh - 80px);">
+                        <ul class="list-group list-group-flush overflow-y-auto" id="section-list">
+                            {% for section in section_list %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center border-0 rounded-0"
+                                data-section-id="{{ section.id }}" data-section-type="{{ section.type }}">
+                                <div class="d-flex align-items-center gap-2" style="flex:1; min-width:0;">
+                                    <!-- drag handle (тянуть за неё) -->
+                                    <span class="drag-handle me-2" aria-hidden="true" title="Перетащить">☰</span>
+
+                                    <button type="button"
+                                            class="btn btn-link section-link text-decoration-none text-truncate text-primary p-0 me-2"
+                                            data-section-id="{{ section.id }}">
+                                        {{ section.name }}
+                                    </button>
+                                </div>
+
+                                <div class="section-action-buttons align-items-center {% if user_role != 'teacher' or mode != 'generation' %}d-none{% endif %}" style="display: flex; gap: 0.5rem;">
+                                    <button type="button" class="btn btn-link p-0 edit-section-button" data-section-id="{{ section.id }}" title="Редактировать">
+                                        <i class="bi bi-pencil-fill text-secondary"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-link p-0 delete-btn" onclick="handleDeleteSection('{{ section.id }}')" title="Удалить">
+                                        <i class="bi bi-trash3-fill text-secondary"></i>
+                                    </button>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    {% if user_role == 'teacher' %}
+                        <div class="text-center m-1">
+                            <a href="#" class="btn text-primary border-0 w-100 fw-semibold add-section-link mb-5" data-is-new="{{ is_new }}" data-lesson-id="{{ lesson.id }}">+ Добавить раздел</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex position-fixed justify-content-end end-0 align-items-center p-2 m-2"
+                 style="z-index: 1039; width: auto; max-width: 100%; bottom: 0px; transform: translateX(5px);" id="panel">
+
+                <!-- Панель управления -->
+                <div class="d-flex bg-white rounded shadow">
+                    {% if mode == "generation" and user_role == "teacher" %}
+                        <div class="m-2 d-flex gap-2 align-items-center">
+                            <!-- Основная кнопка Скачать -->
+                            <div class="text-center flex-shrink-0">
+                                <a id="downloadPdfButton" class="btn border-0 d-flex flex-column align-items-center p-1" href="{% url 'download_pdf' lesson.id %}">
+                                    <i class="bi bi-filetype-pdf fs-6 text-secondary"></i>
+                                    <span class="small mt-1 text-muted" style="font-size: 0.75rem;">Скачать</span>
+                                </a>
+                            </div>
+
+                            <!-- Кнопка Три точки для остальных действий -->
+                            <div class="text-center flex-shrink-0">
+                                <div class="dropdown">
+                                    <button class="btn border-0 d-flex flex-column align-items-center p-1" type="button" id="moreActionsButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots fs-6 text-secondary"></i>
+                                        <span class="small mt-1 text-muted" style="font-size: 0.75rem;">Ещё</span>
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="moreActionsButton">
+                                        <li class="d-lg-none">
+                                            <button class="dropdown-item d-flex align-items-center" data-bs-toggle="offcanvas" data-bs-target="#contextOffcanvas">
+                                                <i class="bi bi-bookmark me-2"></i> Контекст
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button id="dragToggle" class="dropdown-item d-flex align-items-center" onclick="changeMoveStatus();" style="display: none;">
+                                                <i class="bi bi-arrows-move me-2"></i> Переместить
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button id="addToClass" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#classroomModal" style="display: none;">
+                                                <i class="bi bi-plus me-2"></i> В класс
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+
+                    {% if mode == "classroom" %}
+                        {% if user_role == "teacher" %}
+                            <div class="m-2">
+                                <div class="dropdown d-inline-block ms-2 dropup">
+                                    <button class="btn btn-sm btn-primary dropdown-toggle rounded" type="button" id="studentDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-people"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow text-truncate" aria-labelledby="studentDropdown" style="max-width: 250px;">
+                                        {% for student in students %}
+                                            <li>
+                                                <a class="dropdown-item student-option" href="#" data-student-id="{{ student.id }}">
+                                                    {{ student.username }}
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <button class="dropdown-item text-warning" id="addStudentButton" data-bs-toggle="modal" data-bs-target="#invitationModal">
+                                                <i class="bi bi-person-plus me-2"></i> Добавить ученика
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="dropdown d-inline-block ms-2 dropup">
+                                    <button class="btn btn-sm btn-secondary rounded" type="button" id="controlPanelDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="controlPanelDropdown">
+                                        <!-- Синий: Выбрать урок -->
+                                        <li>
+                                            <button type="button" class="dropdown-item text-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#chooseLessonModal" role="menuitem">
+                                                <i class="bi bi-book me-2"></i> Выбрать урок
+                                            </button>
+                                        </li>
+
+                                        <!-- Зелёный / Красный: Копирование -->
+                                        <li>
+                                            <button class="dropdown-item {% if classroom.features.copying %}text-danger fw-semibold{% else %}text-success fw-semibold{% endif %}" id="disableCopyingButton">
+                                                <i class="bi {% if classroom.features.copying %}bi-ban{% else %}bi-check-circle{% endif %} me-2"></i>
+                                                <span class="text">{% if classroom.features.copying %} Запретить копирование {% else %} Разрешить копирование {% endif %}</span>
+                                            </button>
+                                        </li>
+
+                                        <!-- Серый: Обновить страницу -->
+                                        <li>
+                                            <button class="dropdown-item text-secondary fw-semibold" id="refreshPageButton">
+                                                <i class="bi bi-arrow-clockwise me-2"></i> Обновить страницу
+                                            </button>
+                                        </li>
+
+                                        <!-- Зелёный: Присоединиться (только на мобильных) -->
+                                        <li>
+                                            <button class="d-block d-xl-none dropdown-item text-success fw-semibold join-mobile-btn">
+                                                <i class="bi bi-telephone me-2"></i> Присоединиться
+                                            </button>
+                                        </li>
+
+                                        <!-- Синий: Отправить Д/з -->
+                                        <li>
+                                            <a href="{% url 'send_homework_page' classroom.id %}" class="dropdown-item text-primary fw-semibold" role="menuitem">
+                                                <i class="bi bi-send me-2"></i> Отправить Д/з
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                            </div>
+                        {% else %}
+                            <!-- Кнопка звонка -->
+                            <button class="d-block d-xl-none btn border-0 m-2 text-success join-mobile-btn">
+                                <i class="bi bi-telephone"></i> Присоединиться
+                            </button>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="gap-element" class="d-block d-lg-none"></div>
+
+    <!-- Мобильное контекстное окно с вкладками -->
+    <div class="offcanvas offcanvas-bottom ms-auto rounded-top d-mb-none" tabindex="-1" id="contextOffcanvas" style="max-width: 768px; max-height: 80vh; min-height: 60vh;">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title fw-bold fs-5">Контекст</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-2 d-flex flex-column h-100">
+            <div class="{% if mode != 'generation' %} d-none {% endif %}" style="max-height: calc(80vh - 200px);">
+                <!-- Содержимое для generation режима (без вкладок) -->
+                <div class="context-window overflow-y-auto" style="max-height: calc(80vh - 120px);">
+                    <p class="permanent-context-text text-muted text-center m-0">
+                        Добавьте задания в контекст, чтобы генерировать план урока на их основе.
+                    </p>
+                </div>
+
+                <!-- Кнопка Заметка -->
+                <div class="sticky-bottom-wrapper bg-white pt-1 mt-1"
+                    style="position: sticky; bottom: 0; z-index: 2; box-shadow: 0 -4px 6px -4px rgba(0,0,0,0.1);">
+                    <button class="addTextContentButton btn btn-sm text-primary border-0 fw-bold w-100 text-start">
+                        <i class="bi bi-plus-circle me-1"></i> Заметка
+                    </button>
+                    <div class="noteContainer w-80 mx-auto d-flex align-items-center gap-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.3/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="{% static 'updated_functions/common.js' %}?v=10"></script>
+
+    {% if user_role == 'teacher' %}
+        <!-- Модальное окно удаления -->
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmModalLabel">Вы уверены?</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        Это действие необратимо.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="confirmCancel">Отмена</button>
+                        <button type="button" class="btn btn-danger" id="confirmOk">Подтвердить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно выбора: как создать раздел -->
+        <div class="modal fade" id="sectionChoiceModal" tabindex="-1" aria-labelledby="sectionChoiceModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md">
+                <div class="modal-content border-0 shadow-lg rounded-4">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-semibold" id="sectionChoiceModalLabel">Добавление раздела</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body d-flex flex-column gap-3 py-4">
+                        <div class="d-flex gap-3 flex-column flex-md-row justify-content-center">
+                            <!-- Карточка: пустой раздел -->
+                            <button id="createEmptySectionBtn" class="btn btn-light border shadow-sm w-100 text-start p-4 d-flex flex-column align-items-start rounded-4 hover-shadow" style="transition: all 0.3s;">
+                                <i class="bi bi-pencil-square fs-3 text-primary mb-2"></i>
+                                <span class="fw-semibold fs-5 text-dark">Создать вручную</span>
+                                <small class="text-muted">Введите название и создайте пустой раздел</small>
+                            </button>
+
+                            <!-- Карточка: генерация -->
+                            <button id="generateSectionBtn" class="btn btn-primary w-100 text-start p-4 d-flex flex-column align-items-start rounded-4 hover-shadow" style="transition: all 0.3s;">
+                                <i class="bi bi-magic fs-3 mb-2"></i>
+                                <span class="fw-semibold fs-5">Сгенерировать раздел</span>
+                                <small class="text-white-50">AI создаст подходящие задания</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно создания/редактирования раздела -->
+        <div class="modal fade" id="manualSectionModal" tabindex="-1" aria-labelledby="manualSectionModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content border-0 shadow-lg rounded-4">
+                    <div class="modal-header border-0 pb-0">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body pt-3 pb-4">
+                        <p class="modal-title text-center fw-bold mb-4 fs-5" id="manualSectionModalLabel"></p>
+                        <input
+                            type="text"
+                            class="form-control mb-3 rounded-3 shadow-sm"
+                            id="manualSectionName"
+                            placeholder="Название раздела"
+                        />
+
+                        <!-- Радио-кнопки -->
+                        <div class="btn-group w-100 mb-2 mt-3 d-flex" role="group" aria-label="Тип раздела">
+                            <input type="radio" class="btn-check" name="sectionType" id="typeLearning" value="learning">
+                            <label class="btn custom-toggle-btn rounded-start" for="typeLearning">Обучающий</label>
+
+                            <input type="radio" class="btn-check" name="sectionType" id="typeRevision" value="revision">
+                            <label class="btn custom-toggle-btn rounded-end" for="typeRevision">Повторение</label>
+                        </div>
+
+                        <div id="sectionTypeDescription" class="text-muted small text-center mb-4 mt-2">
+                            Является частью текущего урока
+                        </div>
+
+                        <button
+                            class="btn w-100 rounded-3 shadow-sm fw-semibold"
+                            id="saveManualSection"
+                            data-action=""
+                            data-section-id=""
+                        >
+                            <i class="bi me-1" id="saveManualSectionIcon"></i>
+                            <span id="saveManualSectionText"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно генерации раздела -->
+        <div class="modal fade" id="generationModal" tabindex="-1" aria-labelledby="generationModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content shadow-lg rounded-4">
+
+                    <!-- Заголовок -->
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="generationModalLabel">✨ Генерация раздела</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+
+                    <!-- Тело -->
+                    <div class="modal-body px-4">
+                        <!-- Название раздела и флаги -->
+                        <div class="row align-items-center mb-3">
+                            <div class="col-lg-7">
+                                <label for="sectionTitle" class="form-label">Тема раздела</label>
+                                <input type="text" class="form-control" id="sectionTitle" placeholder="Например: Shopping or Past Simple...">
+                            </div>
+                            <div class="col-lg-5 pt-4 pt-md-2">
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" id="emojiCheckbox" checked>
+                                    <label class="form-check-label" for="emojiCheckbox">Добавлять эмодзи</label>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" id="contextCheckbox">
+                                    <label class="form-check-label" for="contextCheckbox">Учитывать текущий контекст</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Навигационные вкладки -->
+                        <ul class="nav nav-tabs mb-3 gap-2" id="templateTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button
+                                    class="nav-link active"
+                                    id="lexical-tab"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#lexical"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="lexical"
+                                    aria-selected="false"
+                                >
+                                    🧠 Лексика
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button
+                                    class="nav-link"
+                                    id="listening-tab"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#listening"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="listening"
+                                    aria-selected="false"
+                                >
+                                    🎧 Аудирование
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button
+                                    class="nav-link"
+                                    id="reading-tab"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#reading"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="reading"
+                                    aria-selected="false"
+                                >
+                                    📖 Чтение
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button
+                                    class="nav-link"
+                                    id="grammar-tab"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#grammar"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="grammar"
+                                    aria-selected="true"
+                                >
+                                    📚 Грамматика
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button
+                                    class="nav-link"
+                                    id="speaking-tab"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#speaking"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="speaking"
+                                    aria-selected="false"
+                                >
+                                    🗣️ Говорение
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button
+                                    class="nav-link"
+                                    id="other-tab"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#other"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="other"
+                                    aria-selected="false"
+                                >
+                                    ⚙️ Другое
+                                </button>
+                            </li>
+                        </ul>
+
+                        <!-- Содержимое вкладок -->
+                        <div class="tab-content" id="templateTabsContent" style="max-height: 400px; overflow-y: auto;">
+                            <div class="tab-pane fade show active" id="lexical" role="tabpanel" aria-labelledby="lexical-tab">
+                                <div id="lexical-template-container"></div>
+                                <button type="button" class="btn border-0 text-primary fw-bold mt-3" onclick="addTemplate('lexical')">Добавить элемент</button>
+                            </div>
+                            <div class="tab-pane fade" id="listening" role="tabpanel" aria-labelledby="listening-tab">
+                                <div id="listening-template-container"></div>
+                                <button type="button" class="btn border-0 text-primary fw-bold mt-3" onclick="addTemplate('listening')">Добавить элемент</button>
+                            </div>
+                            <div class="tab-pane fade" id="reading" role="tabpanel" aria-labelledby="reading-tab">
+                                <div id="reading-template-container"></div>
+                                <button type="button" class="btn border-0 text-primary fw-bold mt-3" onclick="addTemplate('reading')">Добавить элемент</button>
+                            </div>
+                            <div class="tab-pane fade" id="grammar" role="tabpanel" aria-labelledby="grammar-tab">
+                                <div id="grammar-template-container"></div>
+                                <button type="button" class="btn border-0 text-primary fw-bold mt-3" onclick="addTemplate('grammar')">Добавить элемент</button>
+                            </div>
+                            <div class="tab-pane fade" id="speaking" role="tabpanel" aria-labelledby="speaking-tab">
+                                <div id="speaking-template-container"></div>
+                                <button type="button" class="btn border-0 text-primary fw-bold mt-3" onclick="addTemplate('speaking')">Добавить элемент</button>
+                            </div>
+                            <div class="tab-pane fade" id="other" role="tabpanel" aria-labelledby="other-tab">
+                                <div id="other-template-container"></div>
+                                <button type="button" class="btn border-0 text-primary fw-bold mt-3" onclick="addTemplate('other')">Добавить элемент</button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Футер с кнопкой -->
+                    <div class="modal-footer d-flex align-items-center">
+                        <!-- Ссылка на стандартный шаблон -->
+                        <a href="#" id="standartPattern" class="text-muted me-auto text-decoration-none">
+                            Вернуть стандартный шаблон
+                        </a>
+
+                        <!-- Основная кнопка генерации -->
+                        <button type="button" class="btn btn-success" id="generate-section-btn">
+                            Создать
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно выбора типа задания -->
+        <div class="modal fade" id="taskSelectorModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content rounded-4 border-0 shadow-sm">
+              <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-semibold text-dark">Выберите тип задания</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+              </div>
+              <div class="modal-body pt-2">
+                <div class="container-fluid">
+                  <div class="row g-3 justify-content-center" id="taskTypeSelectorContainer">
+                    <!-- Карточки типов заданий будут добавляться сюда через JS -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Модальное окно редактора задания -->
+        <div class="modal fade" id="taskEditorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Редактор задания</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body" id="taskEditorContainer">
+                    <!-- Содержимое редактора будет добавляться сюда через JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+        <script src="{% static 'updated_functions/generative.js' %}?v=10"></script>
+        <script src="{% static 'updated_functions/teacher.js' %}?v=10"></script>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</body>
+</html>

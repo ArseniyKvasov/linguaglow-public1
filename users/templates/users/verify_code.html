@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>LinguaGlow – Подтверждение кода</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            color: #111827;
+        }
+        form p {
+            margin-bottom: 1rem;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus {
+            border-color: #3b82f6;
+        }
+        button {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: none;
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #2563eb;
+        }
+        .link {
+            display: block;
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #3b82f6;
+            text-decoration: none;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+        <!-- Yandex.Metrika counter -->
+        <script type="text/javascript">
+            (function(m,e,t,r,i,k,a){
+                m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+                m[i].l=1*new Date();
+                for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+                k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+            })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=103833195', 'ym');
+
+            ym(103833195, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+        </script>
+        <noscript><div><img src="https://mc.yandex.ru/watch/103833195" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+        <!-- /Yandex.Metrika counter -->
+<div class="container">
+    <h2>Подтверждение кода</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="hidden" name="next" value="{{ next }}">
+        <button type="submit" id="send-code-btn">Сменить пароль</button>
+    </form>
+
+    <a href="{% url 'forgot_password' %}" id="resend-link" class="link">Отправить код ещё раз</a>
+    <p id="support-msg" style="display:none;">
+        Если код не приходит через 60 секунд, напишите нам на <a href="mailto:linguaglow0@gmail.com">linguaglow0@gmail.com</a>.
+        За помощь разработчиком — Премиум доступ в подарок!
+    </p>
+</div>
+
+<script>
+    const resendLink = document.getElementById('resend-link');
+    const supportMsg = document.getElementById('support-msg');
+    const cooldown = {{ cooldown_seconds }};
+    let lastClick = 0;
+
+    resendLink.addEventListener('click', (e) => {
+        const now = Math.floor(Date.now() / 1000);
+        if (now - lastClick < cooldown) {
+            e.preventDefault();
+            alert(`Повторная отправка доступна через ${cooldown - (now - lastClick)} сек.`);
+            if (now - lastClick >= cooldown) {
+                supportMsg.style.display = 'block';
+            }
+        } else {
+            lastClick = now;
+        }
+    });
+</script>
+</body>
+</html>

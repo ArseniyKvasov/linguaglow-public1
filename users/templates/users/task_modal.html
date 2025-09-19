@@ -1,0 +1,1858 @@
+{% load custom_filters %}
+
+<!-- Передаём task_status из контекста в JS безопасно -->
+{{ task_status|json_script:"task-status-data" }}
+
+<!-- ===========================
+     МОДАЛКИ (Guide + Steps + Create)
+     =========================== -->
+
+<!-- {% if gender == "Женский" %}-- >
+<!-- Модалка: Гид по платформе -->
+<div class="modal fade" id="guideModal" tabindex="-1" aria-labelledby="guideLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="guideLabel">Гид по платформе LinguaGlow</h5>
+            </div>
+            <div class="modal-body">
+                <p><strong>Поздравляю! 🚀</strong> Первый шаг пройден — ты создала аккаунт.</p>
+                <p>Ниже — короткий и приятный маршрут по тому, как быстро настроить всё и получить подарок в конце. Готова? Поехали! 🎁</p>
+                <hr>
+                <h6>Что дальше?</h6>
+                <p>Мы будем проходить шаг за шагом, чтобы быстро освоиться на платформе.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="guideNextBtn">
+                    Дальше →
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Модалка: Шаг 1 из 5 — Добро пожаловать -->
+<div class="modal fade" id="step1Modal" tabindex="-1" aria-labelledby="step1Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="step1Label">Шаг 1 из 3 — Добро пожаловать</h5>
+            </div>
+            <div class="modal-body">
+                <p><strong>Ты уже зарегистрировалась и попала в личный кабинет.</strong></p>
+                <p>Здесь собираются все твои курсы, классы и проекты.</p>
+                <hr>
+                <p>Готова продолжить? Следующий шаг поможет создать твой первый виртуальный класс!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="step1NextBtn">
+                    Дальше →
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка: Задача выполнена -->
+<div class="modal fade" id="taskCreateClassroomCompletedModal" tabindex="-1" aria-labelledby="taskCompletedLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskCompletedLabel">Задача выполнена! 🔥</h5>
+            </div>
+            <div class="modal-body">
+                <p>Ты уже добавила один из публичных уроков.</p>
+                <p>Отлично — но это только начало.</p>
+            </div>
+            <div class="modal-footer">
+                <a href="{% url 'home' %}" class="btn btn-primary">
+                    Что дальше?
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Модалка: Пригласи первого ученика (подарок уже получен) -->
+<div class="modal fade" id="studentInviteModal" tabindex="-1" aria-labelledby="studentInviteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="studentInviteLabel">Пригласи первого ученика</h5>
+            </div>
+            <div class="modal-body">
+                <p><strong>Поздравляем! 🎉 Твой подарок уже у тебя.</strong></p>
+                <p>Теперь самое важное — пригласи первого ученика и начни проводить занятия. Ты полностью готова к работе с платформой 🚀</p>
+
+                <!-- Блок с ссылкой и кнопками -->
+                <div class="mt-4">
+                    <label for="inviteLink" class="form-label">Ссылка приглашения</label>
+                    <div class="input-group mb-2">
+                        <input
+                            id="inviteLink"
+                            class="form-control"
+                            type="text"
+                            readonly
+                            value="{{ classroom_link|default:'' }}"
+                            aria-label="Ссылка приглашения"
+                        />
+                        <button class="btn btn-outline-secondary" type="button" id="copyInviteBtn" title="Скопировать ссылку">
+                            <i class="bi bi-clipboard"></i>&nbsp;Скопировать
+                        </button>
+                    </div>
+
+                    <div class="d-flex gap-2 align-items-center">
+                        <button class="btn btn-primary" id="shareInviteBtn" type="button" title="Отправить через системный шэр">
+                            <i class="bi bi-share-fill"></i>&nbsp;Отправить
+                        </button>
+
+                        <div id="inviteStatus" class="ms-3 text-muted" aria-live="polite"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="step5NextBtn" data-bs-dismiss="modal" onclick="updateTaskStatus('student_invitation', 'student_invitation_use');">
+                    Готово
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!--{% elif gender == "Мужской" %}-->
+
+
+<div class="modal fade" id="guideModal" tabindex="-1" aria-labelledby="guideLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="guideLabel">Гид по платформе LinguaGlow</h5>
+            </div>
+            <div class="modal-body">
+                <p><strong>Поздравляю! 🚀</strong> Первый шаг пройден — ты создал аккаунт.</p>
+                <p>Ниже — короткий и приятный маршрут по тому, как быстро настроить всё и получить подарок в конце. Готов? Поехали! 🎁</p>
+                <hr>
+                <h6>Что дальше?</h6>
+                <p>Мы будем проходить шаг за шагом, чтобы быстро освоиться на платформе.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="guideNextBtn">
+                    Дальше →
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка: Шаг 1 из 5 — Добро пожаловать -->
+<div class="modal fade" id="step1Modal" tabindex="-1" aria-labelledby="step1Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="step1Label">Шаг 1 из 3 — Добро пожаловать</h5>
+            </div>
+            <div class="modal-body">
+                <p><strong>Ты уже зарегистрировался и попал в личный кабинет.</strong></p>
+                <p>Здесь собираются все твои курсы, классы и проекты.</p>
+                <hr>
+                <p>Готов продолжить? Следующий шаг поможет создать твой первый виртуальный класс!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="step1NextBtn">
+                    Дальше →
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка: Задача выполнена -->
+<div class="modal fade" id="taskCreateClassroomCompletedModal" tabindex="-1" aria-labelledby="taskCompletedLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskCompletedLabel">Задача выполнена! 🔥</h5>
+            </div>
+            <div class="modal-body">
+                <p>Ты уже добавил один из публичных уроков.</p>
+                <p>Отлично — но это только начало.</p>
+            </div>
+            <div class="modal-footer">
+                <a href="{% url 'home' %}" class="btn btn-primary">
+                    Что дальше?
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка: Пригласи первого ученика (подарок уже получен) -->
+<div class="modal fade" id="studentInviteModal" tabindex="-1" aria-labelledby="studentInviteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="studentInviteLabel">Пригласи первого ученика</h5>
+            </div>
+            <div class="modal-body">
+                <p><strong>Поздравляем! 🎉 Твой подарок уже у тебя.</strong></p>
+                <p>Теперь самое важное — пригласи первого ученика и начни проводить занятия. Ты полностью готов к работе с платформой 🚀</p>
+
+                <!-- Блок с ссылкой и кнопками -->
+                <div class="mt-4">
+                    <label for="inviteLink" class="form-label">Ссылка приглашения</label>
+                    <div class="input-group mb-2">
+                        <input
+                            id="inviteLink"
+                            class="form-control"
+                            type="text"
+                            readonly
+                            value="{{ classroom_link|default:'' }}"
+                            aria-label="Ссылка приглашения"
+                        />
+                        <button class="btn btn-outline-secondary" type="button" id="copyInviteBtn" title="Скопировать ссылку">
+                            <i class="bi bi-clipboard"></i>&nbsp;Скопировать
+                        </button>
+                    </div>
+
+                    <div class="d-flex gap-2 align-items-center">
+                        <button class="btn btn-primary" id="shareInviteBtn" type="button" title="Отправить через системный шэр">
+                            <i class="bi bi-share-fill"></i>&nbsp;Отправить
+                        </button>
+
+                        <div id="inviteStatus" class="ms-3 text-muted" aria-live="polite"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="stepInviteBtn" data-bs-dismiss="modal" onclick="updateTaskStatus('student_invitation', 'student_invitation_use');">
+                    Готово
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!--{% endif %}-->
+
+<!-- Модалка: Шаг 2 — Создай виртуальный класс -->
+<div class="modal fade" id="step2Modal" tabindex="-1" aria-labelledby="step2Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="step2Label">Шаг 2 из 3 — Создай виртуальный класс</h5>
+            </div>
+            <div class="modal-body">
+                <p><strong>Пора сделать первый виртуальный класс.</strong></p>
+                <p>Нажми кнопку "Начать!" и следуй подсказкам, чтобы создать свой первый виртуальный класс.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="startClassBtn" class="btn btn-success">
+                    Начать!
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Проверка, создан ли виртуальный класс -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Функция для обновления статуса и открытия модалки
+    async function completeCreateClassroom() {
+        try {
+            // Открываем модалку следующего шага (Шаг 3 — заполнение профиля)
+            showModal('taskCreateClassroomCompletedModal');
+        } catch (err) {
+            console.error('Не удалось обновить статус create_classroom', err);
+        }
+    }
+
+    function setCookie(name, value, minutes) {
+        const d = new Date();
+        d.setTime(d.getTime() + minutes * 60 * 1000);
+        document.cookie = `${name}=${value};expires=${d.toUTCString()};path=/`;
+    }
+
+    // Проверяем mode
+    const infoStatusContainer = document.getElementById("infoStatusContainer");
+    if (infoStatusContainer) {
+        const statusMode = infoStatusContainer.dataset.mode;
+        if (statusMode === "classroom" || statusMode === "generation") {
+            if (statusMode === "classroom" && currentStatus['create_classroom'] !== "Выполнено") {
+                updateTaskStatus('create_classroom', 'task_generated');
+                // Обновляем глобальную переменную локально
+                currentStatus['create_classroom'] = 'Выполнено';
+                currentStatus['task_generated'] = 'В прогрессе';
+                setTimeout(completeCreateClassroom, 15000);
+            }
+        } else if (statusMode === "home") {
+            let redirected = false;
+
+            // Classroom redirect
+            if (!getCookie('autoOpenClassroom')) {
+                const classroomCard = document.querySelector('.classroom-card');
+                if (classroomCard && currentStatus['create_classroom'] !== 'Выполнено' && currentStatus['registration'] === 'Выполнено') {
+                    const classroomRole = classroomCard.querySelector('.badge-role');
+                    if (classroomRole) {
+                        if (classroomRole === "Учитель") {
+                            const linkClassroom = classroomCard.querySelector('.stretched-link');
+                            if (linkClassroom) {
+                                window.location.href = linkClassroom.href;
+                                setCookie('autoOpenClassroom', '1', 20);
+                                redirected = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Course redirect
+            if (!redirected && !getCookie('autoOpenCourse')) {
+                const courseCard = document.querySelector('.course-card');
+                if (courseCard && currentStatus['task_generated'] !== 'Выполнено' && currentStatus['create_classroom'] === 'Выполнено') {
+                    const linkCourse = courseCard.querySelector('.stretched-link');
+                    if (linkCourse) {
+                        window.location.href = linkCourse.href;
+                        setCookie('autoOpenCourse', '1', 20);
+                        redirected = true;
+                    }
+                }
+            }
+
+            // Модалка вызывается всегда
+            if (!redirected) {
+                openRelevantModal();
+            }
+        } else if (statusMode && currentStatus['gift_received'] == "В прогрессе") {
+            openRelevantModal();
+        }
+    }
+});
+</script>
+
+<!-- Модалка: Шаг 3 — Заполнить профиль -->
+<div class="modal fade" id="step3Modal" tabindex="-1" aria-labelledby="step3Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="step3Label">Шаг 3 из 5 — Заполни профиль</h5>
+            </div>
+            <div class="modal-body">
+                <p><strong>Расскажи о себе — это поможет ИИ подстроиться под твой стиль.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <a href="{% url 'ai_profile_survey' %}" type="button" class="btn btn-primary" id="step3NextBtn">
+                    Перейти
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка: Шаг 4 — Создать урок -->
+<div class="modal fade" id="step4Modal" tabindex="-1" aria-labelledby="step4Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="step4Label">Шаг 3 из 3 — Создай уникальный урок</h5>
+            </div>
+            <div class="modal-body">
+                <p><strong>Ты почти у цели! 🎯</strong></p>
+                <p>Давай создадим первый урок.  </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="createCourseBtn">
+                    Let's go!
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка 1: Добавление задания -->
+<div class="modal fade" id="addTaskGuideModal" tabindex="-1" aria-labelledby="addTaskGuideLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow rounded">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTaskGuideLabel">Добавление задания ✨</h5>
+            </div>
+            <div class="modal-body">
+                <p>Нажми <strong>«Добавить задание»</strong> внизу страницы и выбери один из шаблонов.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="scrollToAddTask()">
+                    Понятно!
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка 2: После создания первого задания -->
+<div class="modal fade" id="taskCreatedModal" tabindex="-1" aria-labelledby="taskCreatedLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow rounded">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskCreatedLabel">Классно! 😌</h5>
+            </div>
+            <div class="modal-body">
+                <p>Первое задание создано.</p>
+                <p>А теперь — как создать раздел и структурировать курс в 2 клика: нажми <strong>«+ Добавить раздел»</strong>.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal" onclick="scrollToAddSection()">
+                    Ок!
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка 3: Поздравление и следующий шаг -->
+<div class="modal fade" id="congratsModal" tabindex="-1" aria-labelledby="congratsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow rounded">
+            <div class="modal-header">
+                <h5 class="modal-title" id="congratsLabel">Ура! 🎉</h5>
+            </div>
+            <div class="modal-body">
+                <p>Теперь ты знаешь, как использовать ИИ в своей работе.</p>
+                <p>Пойдём дальше?</p>
+            </div>
+            <div class="modal-footer">
+                <a href="{% url 'home' %}" class="btn btn-primary">ДА!</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+   function scrollToAddTask() {
+        const el = document.getElementById("add-task-button-wrapper");
+        if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }
+
+   function scrollToAddSection() {
+        const el = document.querySelector(".add-section-link");
+        if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const inviteInput = document.getElementById('waitingInviteLink');
+        const copyBtn = document.getElementById('waitingCopyBtn');
+        const spinner = document.getElementById('waitingSpinner');
+        const statusText = document.getElementById('waitingStatusText');
+        const waitingModalEl = document.getElementById('waitingStudentModal');
+
+        function getInviteUrl() {
+            return inviteInput ? (inviteInput.value || '').trim() : '';
+        }
+
+        function copyToClipboard(text) {
+            if (!text) return Promise.reject(new Error('Пустая ссылка'));
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
+            }
+            return new Promise((resolve, reject) => {
+                try {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.left = '-9999px';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        }
+
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function () {
+                const url = getInviteUrl();
+                if (!url) {
+                    statusText.textContent = 'Ссылка отсутствует';
+                    statusText.classList.add('text-danger');
+                    setTimeout(() => {
+                        statusText.classList.remove('text-danger');
+                        statusText.textContent = 'Ожидаем, пока ученик присоединится...';
+                    }, 3000);
+                    return;
+                }
+
+                copyBtn.disabled = true;
+                copyToClipboard(url)
+                    .then(() => {
+                        statusText.textContent = 'Ссылка скопирована';
+                        statusText.classList.add('text-success');
+                    })
+                    .catch(() => {
+                        statusText.textContent = 'Не удалось скопировать';
+                        statusText.classList.add('text-danger');
+                    })
+                    .finally(() => {
+                        setTimeout(() => {
+                            statusText.classList.remove('text-success', 'text-danger');
+                            statusText.textContent = 'Ожидаем, пока ученик присоединится...';
+                            copyBtn.disabled = false;
+                        }, 2500);
+                    });
+            });
+        }
+
+        // При открытии модалки — если ссылки нет, покажем сообщение и отключим кнопку
+        if (waitingModalEl) {
+            waitingModalEl.addEventListener('show.bs.modal', function () {
+                const url = getInviteUrl();
+                if (!url) {
+                    if (spinner) spinner.classList.add('d-none');
+                    if (statusText) {
+                        statusText.textContent = 'Ссылка не создана';
+                        statusText.classList.add('text-muted');
+                    }
+                    if (copyBtn) copyBtn.disabled = true;
+                } else {
+                    if (spinner) spinner.classList.remove('d-none');
+                    if (statusText) {
+                        statusText.textContent = 'Ожидаем, пока ученик присоединится...';
+                        statusText.classList.remove('text-muted');
+                    }
+                    if (copyBtn) copyBtn.disabled = false;
+                }
+            });
+
+            // При закрытии — сбрасываем статус
+            waitingModalEl.addEventListener('hidden.bs.modal', function () {
+                if (spinner) spinner.classList.remove('d-none');
+                if (statusText) {
+                    statusText.textContent = 'Ожидаем, пока ученик присоединится...';
+                    statusText.classList.remove('text-success', 'text-danger', 'text-muted');
+                }
+                if (copyBtn) copyBtn.disabled = false;
+            });
+        }
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const inviteLinkInput = document.getElementById('inviteLink');
+        const copyBtn = document.getElementById('copyInviteBtn');
+        const shareBtn = document.getElementById('shareInviteBtn');
+        const statusEl = document.getElementById('inviteStatus');
+        const step5NextBtn = document.getElementById('stepInviteBtn');
+        const step5ModalEl = document.getElementById('step5Modal');
+
+        // safety: ссылка может быть пустой
+        function getInviteUrl() {
+            return inviteLinkInput ? (inviteLinkInput.value || '').trim() : '';
+        }
+
+        // Таймер для активации основной кнопки
+        let activationTimeout = null;
+
+        // Функция активации main button через 5 сек
+        function scheduleActivateMainButton() {
+            if (activationTimeout) {
+                clearTimeout(activationTimeout);
+                activationTimeout = null;
+            }
+
+            // Заблокируем отправочные кнопки на время
+            activationTimeout = setTimeout(() => {
+                if (step5NextBtn) {
+                    step5NextBtn.disabled = false;
+                    step5NextBtn.textContent = 'Отправлен';
+                }
+                if (statusEl) statusEl.textContent = 'Готово';
+                if (copyBtn) copyBtn.disabled = false;
+                if (shareBtn) shareBtn.disabled = false;
+                activationTimeout = null;
+            }, 5000);
+        }
+
+        // Copy handler
+        function copyToClipboard(text) {
+            if (!text) return Promise.reject(new Error('Пустая ссылка'));
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
+            }
+            return new Promise((resolve, reject) => {
+                try {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.left = '-9999px';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        }
+
+        // Share через Web Share API — иначе ничего (не делаем fallback)
+        function shareViaNavigator(text, url) {
+            if (!navigator.share) {
+                // пользователь просил: "иначе ничего" — не используем fallback'ы
+                return Promise.reject(new Error('no-web-share'));
+            }
+            return navigator.share({
+                title: 'Приглашение в класс',
+                text: text,
+                url: url || undefined
+            });
+        }
+
+        // Составляем пользовательский текст с ссылкой
+        function buildShareText(url) {
+            return 'Привет! Предлагаю провести следующее занятие на интерактивной платформе. Создай, пожалуйста, аккаунт заранее. Вот ссылка: ' + url;
+        }
+
+        // Обработчики событий
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function () {
+                const inviteUrl = getInviteUrl();
+                if (!inviteUrl) {
+                    statusEl.textContent = 'Ссылка отсутствует';
+                    return;
+                }
+                copyToClipboard(inviteUrl)
+                    .then(() => {
+                        statusEl.textContent = 'Скопировано';
+                        scheduleActivateMainButton();
+                    })
+                    .catch(() => {
+                        statusEl.textContent = 'Не удалось скопировать';
+                    });
+            });
+        }
+
+        if (shareBtn) {
+            shareBtn.addEventListener('click', function () {
+                const inviteUrl = getInviteUrl();
+                if (!inviteUrl) {
+                    statusEl.textContent = 'Ссылка отсутствует';
+                    return;
+                }
+                const message = buildShareText(inviteUrl);
+                shareViaNavigator(message, inviteUrl)
+                    .then(() => {
+                        statusEl.textContent = 'Отправлено';
+                        scheduleActivateMainButton();
+                    })
+                    .catch((err) => {
+                        // Если Web Share не поддерживается — ничего не делаем (по желанию показываем индикатор)
+                        if (err && err.message === 'no-web-share') {
+                            statusEl.textContent = 'Не получилось. Нажми кнопку Скопировать';
+                            // не активируем кнопку и не открываем fallback
+                        } else {
+                            // пользователь мог отменить окно шаринга — всё равно считаем это как действие
+                            statusEl.textContent = 'Отмена или ошибка отправки';
+                            scheduleActivateMainButton();
+                        }
+                    });
+            });
+        }
+
+        // Если ссылки нет — отключаем кнопки
+        if (!getInviteUrl()) {
+            if (copyBtn) copyBtn.disabled = true;
+            if (shareBtn) shareBtn.disabled = true;
+            if (statusEl) statusEl.textContent = 'Ссылка не создана';
+        }
+
+        // Очистка таймера при закрытии модалки
+        if (step5ModalEl) {
+            step5ModalEl.addEventListener('hidden.bs.modal', function () {
+                if (activationTimeout) {
+                    clearTimeout(activationTimeout);
+                    activationTimeout = null;
+                }
+                if (statusEl) statusEl.textContent = '';
+                // сбросим основную кнопку в исходное состояние (по желанию)
+                if (step5NextBtn) {
+                    step5NextBtn.disabled = true;
+                    step5NextBtn.textContent = 'Ссылка отправлена';
+                }
+            });
+        }
+    });
+</script>
+
+<!-- Модалка: Ожидаем ученика -->
+<div class="modal fade" id="waitingStudentModal" tabindex="-1" aria-labelledby="waitingStudentLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content shadow-lg rounded-3 border-0">
+
+            <!-- Заголовок -->
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-semibold" id="waitingStudentLabel">
+                    Осталось дождаться ученика
+                </h5>
+            </div>
+
+            <!-- Тело -->
+            <div class="modal-body">
+                <p class="mb-3">
+                    Мы отправили приглашение на твой e-mail:
+                    <strong>{{ user.email|default:"(email отсутствует)" }}</strong>.
+                </p>
+                <p class="mb-3">
+                    Чтобы ускорить процесс, можешь скопировать ссылку ниже и отправить ученику любым удобным способом.
+                </p>
+
+                <!-- Ссылка приглашения -->
+                <label for="waitingInviteLink" class="form-label small text-muted">Ссылка для приглашения</label>
+                <div class="input-group mb-3">
+                    <input
+                        id="waitingInviteLink"
+                        class="form-control"
+                        type="text"
+                        readonly
+                        value="{{ classroom_link|default:'' }}"
+                        aria-label="Ссылка приглашения"
+                    />
+                    <button class="btn btn-outline-primary" type="button" id="waitingCopyBtn" title="Скопировать ссылку">
+                        <i class="bi bi-clipboard"></i>&nbsp;Скопировать
+                    </button>
+                </div>
+
+                <!-- Статус -->
+                <div class="d-flex align-items-center gap-2 mt-3">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></div>
+                    <div id="waitingStatusText" class="fw-medium">
+                        Ждём, пока ученик присоединится...
+                    </div>
+                </div>
+
+                <!-- Подсказка -->
+                <div id="waitingHint" class="mt-3 text-muted small">
+                    ✉️ Если письма нет — проверь папку «Спам/Промоакции» или отправь ссылку вручную.
+                </div>
+            </div>
+
+            <!-- Футер -->
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" id="waitingCloseBtn" data-bs-dismiss="modal">
+                    Закрыть
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Модалка 1: Уведомление — чеклист выполнен -->
+<div class="modal fade" id="receiveGift" tabindex="-1" aria-labelledby="receiveGiftLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="receiveGiftLabel">Уведомление — чеклист выполнен</h5>
+            </div>
+
+            <div class="modal-body text-center">
+                <h2 class="mb-3">Поздравляем! 🎉</h2>
+                <p class="lead mb-3">Ты выполнил все шаги чеклиста — держи свой подарок!</p>
+            </div>
+
+            <div class="modal-footer justify-content-center">
+                <button type="button"
+                        class="btn btn-primary btn-lg"
+                        id="getGiftBtn"
+                        data-bs-dismiss="modal"
+                        data-bs-toggle="modal"
+                        data-bs-target="#giftModal" onclick="updateTaskStatus('gift_received', 'student_invitation');">
+                    Получить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка 2: Твой подарок -->
+<div class="modal fade" id="giftModal" tabindex="-1" aria-labelledby="giftLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="giftLabel">Твой подарок</h5>
+            </div>
+
+            <div class="modal-body">
+                <div class="d-flex gap-3 align-items-start">
+                    <div class="display-1">🎁</div>
+                    <div>
+                        <h4 class="mb-2">Твой подарок — {% if present_type == "Токены" %}500 токенов!{% else %}<span class="text-success">Премиум-доступ на неделю</span>{% endif %}</h4>
+                        <p class="mb-2">
+                            Приглашай сколько угодно учеников и создавай уникальные уроки в 2 клика — больше никакой рутины!
+                        </p>
+                        <p class="text-muted small mb-0">Подарок активируется автоматически.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-success btn-lg" onclick="updateTaskStatus('gift_received', 'student_invitation'); window.location.reload();">
+                    Активировать
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const studentEl = document.getElementById('studentJoinedModal');
+        const giftEl = document.getElementById('giftModal');
+
+        const getGiftBtn = document.getElementById('getGiftBtn');
+        const activateGiftBtn = document.getElementById('activateGiftBtn');
+
+        const joinedCopyBtn = document.getElementById('joinedCopyBtn');
+        const giftCopyBtn = document.getElementById('giftCopyBtn');
+
+        const joinedInviteInput = document.getElementById('joinedInviteLink');
+        const giftInviteInput = document.getElementById('giftInviteLink');
+
+        // Инициализируем экземпляры модалок (Bootstrap 5)
+        let studentModalInstance = null;
+        let giftModalInstance = null;
+        try {
+            if (studentEl) studentModalInstance = new bootstrap.Modal(studentEl);
+            if (giftEl) giftModalInstance = new bootstrap.Modal(giftEl);
+        } catch (err) {
+            console.warn('Bootstrap Modal init failed', err);
+        }
+
+        function copyToClipboard(text) {
+            if (!text) return Promise.reject(new Error('empty'));
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
+            }
+            return new Promise((resolve, reject) => {
+                try {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.left = '-9999px';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    resolve();
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        }
+
+        // Copy handlers
+        if (joinedCopyBtn) {
+            joinedCopyBtn.addEventListener('click', function () {
+                const url = joinedInviteInput ? joinedInviteInput.value.trim() : '';
+                if (!url) {
+                    joinedCopyBtn.classList.add('btn-danger');
+                    setTimeout(() => joinedCopyBtn.classList.remove('btn-danger'), 900);
+                    return;
+                }
+                joinedCopyBtn.disabled = true;
+                copyToClipboard(url).finally(() => {
+                    joinedCopyBtn.disabled = false;
+                });
+            });
+        }
+
+        if (giftCopyBtn) {
+            giftCopyBtn.addEventListener('click', function () {
+                const url = giftInviteInput ? giftInviteInput.value.trim() : '';
+                if (!url) {
+                    giftCopyBtn.classList.add('btn-danger');
+                    setTimeout(() => giftCopyBtn.classList.remove('btn-danger'), 900);
+                    return;
+                }
+                giftCopyBtn.disabled = true;
+                copyToClipboard(url).finally(() => {
+                    giftCopyBtn.disabled = false;
+                });
+            });
+        }
+
+        // Нажатие "Получить" — закрываем первую модалку и открываем вторую
+        if (getGiftBtn) {
+            getGiftBtn.addEventListener('click', function () {
+                try {
+                    if (studentModalInstance) studentModalInstance.hide();
+                } catch (e) {
+                    // fallback: попытаемся скрыть через data-bs-dismiss
+                    if (studentEl) studentEl.classList.remove('show');
+                }
+
+                // Небольшая задержка для плавности, затем открываем gift
+                setTimeout(() => {
+                    try {
+                        if (giftModalInstance) giftModalInstance.show();
+                    } catch (e) {
+                        if (giftEl) giftEl.classList.add('show');
+                    }
+                }, 150);
+            });
+        }
+
+        // Нажатие "Активировать" — закрываем gift и показываем уведомление об успешной активации
+        if (activateGiftBtn) {
+            activateGiftBtn.addEventListener('click', function () {
+                try {
+                    if (giftModalInstance) giftModalInstance.hide();
+                } catch (e) {
+                    if (giftEl) giftEl.classList.remove('show');
+                }
+
+                // Показать временное уведомление вверху страницы
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x';
+                alert.style.zIndex = 11000;
+                alert.style.marginTop = '16px';
+                alert.setAttribute('role', 'alert');
+                alert.innerHTML = 'Подарок активирован — приятного использования! <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+                document.body.appendChild(alert);
+
+                // Автоматически закрыть через 4 сек
+                setTimeout(() => {
+                    try {
+                        const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                        bsAlert.close();
+                    } catch (e) {
+                        if (alert.parentNode) alert.parentNode.removeChild(alert);
+                    }
+                }, 4000);
+            });
+        }
+
+        // Защита: если модалки вызываются внешне, можно открыть studentJoinedModal так:
+        // if (studentModalInstance) studentModalInstance.show();
+    });
+</script>
+
+<!-- Модалка: Шаг 5 — Обратная связь (финал) -->
+<div class="modal fade" id="step5Modal" tabindex="-1" aria-labelledby="step6Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="step6Label">Финальный шаг — Обратная связь</h5>
+            </div>
+            <div class="modal-body">
+                <p>Расскажи нам, как прошло знакомство с платформой.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                        data-bs-toggle="modal"
+                        data-bs-target="#feedbackModal">
+                    Отправить отзыв
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Обратная связь -->
+<!-- Модалка -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="feedbackModalLabel">Обратная связь</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <form id="feedbackForm" method="post" action="{% url 'feedback' %}">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Если бы волшебная палочка могла решить одну проблему в вашей работе, что бы это было?</label>
+                        <textarea
+                            name="question_magic"
+                            id="id_question_magic"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Опишите проблему..."></textarea>
+                        <div class="invalid-feedback" data-field="question_magic"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Что вы ненавидите в подготовке к урокам?</label>
+                        <textarea
+                            name="question_hate"
+                            id="id_question_hate"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Что занимает много времени, раздражает или мешает?"></textarea>
+                        <div class="invalid-feedback" data-field="question_hate"></div>
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-primary w-100"
+                            onclick="updateTaskStatus('feedback', 'gift_received'); hideModal('currentModalId'); setTimeout(() => showModal('receiveGift'), 1000);">
+                        Отправить
+                    </button>
+                </form>
+
+                <!-- Блок для сообщения после отправки -->
+                <div id="feedbackMessage" class="mt-3 text-center" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function getCookie(name) {
+let cookieValue = null;
+if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+        }
+    }
+}
+return cookieValue;
+}
+
+    (function () {
+        const form = document.getElementById('feedbackForm');
+        const msgBlock = document.getElementById('feedbackMessage');
+        const modalEl = document.getElementById('feedbackModal');
+        const bsModal = new bootstrap.Modal(modalEl);
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Сброс ошибок
+            form.querySelectorAll('.is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
+            form.querySelectorAll('.invalid-feedback').forEach(el => {
+                el.textContent = '';
+            });
+
+            const url = form.action;
+            const formData = new FormData(form);
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData,
+            })
+            .then(async (resp) => {
+                if (resp.ok) {
+                    return resp.json();
+                } else {
+                    const json = await resp.json().catch(()=> null);
+                    throw {status: resp.status, json};
+                }
+            })
+            .then(data => {
+                // Успех
+                msgBlock.style.display = 'block';
+                msgBlock.className = 'mt-3 text-center text-success';
+                msgBlock.textContent = data.message || 'Спасибо за обратную связь!';
+                // очистить форму
+                form.reset();
+
+                // показать сообщение 2 секунды, затем закрыть модалку
+                setTimeout(() => {
+                    bsModal.hide();
+                    msgBlock.style.display = 'none';
+                }, 2000);
+            })
+            .catch(err => {
+                if (err.json && err.json.errors) {
+                    // показать ошибки рядом с полями
+                    const errors = err.json.errors;
+                    for (const [field, msgs] of Object.entries(errors)) {
+                        const input = form.querySelector('[name="' + field + '"]');
+                        if (input) {
+                            input.classList.add('is-invalid');
+                            const fb = form.querySelector('.invalid-feedback[data-field="' + field + '"]');
+                            if (fb) fb.textContent = Array.isArray(msgs) ? msgs.join(' ') : msgs;
+                        }
+                    }
+                } else {
+                    // общая ошибка
+                    msgBlock.style.display = 'block';
+                    msgBlock.className = 'mt-3 text-center text-danger';
+                    msgBlock.textContent = 'Ошибка отправки. Попробуйте ещё раз.';
+                }
+            });
+        });
+    })();
+</script>
+
+<!-- ===========================
+     СКРИПТ: логика открытия/обновления статусов
+     =========================== -->
+<script>
+    // -------------------------
+    //  Глобальная переменная статусов
+    // -------------------------
+    let currentStatus = (function () {
+        const el = document.getElementById('task-status-data');
+        if (el) {
+            try {
+                return JSON.parse(el.textContent);
+            } catch (e) {
+                console.error('Ошибка парсинга task_status из шаблона', e);
+            }
+        }
+        // fallback — дефолтные статусы
+        return {
+            registration: "Не приступал к заданию",
+            create_classroom: "Не приступал к заданию",
+            task_generated: "Не приступал к заданию",
+            section_created: "Не приступал к заданию",
+            gift_received: "Не приступал к заданию",
+            student_invitation: "Не приступал к заданию",
+            student_invitation_use: "Не приступал к заданию",
+        };
+    })();
+
+    // -------------------------
+    //  Утилиты работы с модалками
+    // -------------------------
+    function showModal(modalId) {
+        const el = document.getElementById(modalId);
+        if (!el) {
+            console.error('Модалка не найдена:', modalId);
+            return;
+        }
+        const inst = new bootstrap.Modal(el);
+        inst.show();
+    }
+
+    function hideModal(modalId) {
+        const el = document.getElementById(modalId);
+        if (!el) return;
+        const inst = bootstrap.Modal.getInstance(el);
+        if (inst) inst.hide();
+    }
+
+    // -------------------------
+    //  Запрос на сервер: обновление статусов
+    //  (completedTask или nextTask могут быть null)
+    // -------------------------
+    const modalFive = document.getElementById("step5Modal");
+    let invitationSendLink = "";
+    if (modalFive) {
+        linkInput = modalFive.querySelector("#inviteLink");
+        if (linkInput) {
+            invitationSendLink = linkInput.value;
+        }
+    }
+    async function updateTaskStatus(completedTask, nextTask) {
+        try {
+            const resp = await fetch('/users/update-task-status/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    completed_task: completedTask,
+                    next_task: nextTask,
+                    link: invitationSendLink,
+                })
+            });
+
+            if (!resp.ok) {
+                throw new Error('HTTP ' + resp.status);
+            }
+
+            const data = await resp.json();
+
+            // Убедимся, что обновляем глобальную переменную локально
+            if (completedTask) currentStatus[completedTask] = "Выполнено";
+            if (nextTask && currentStatus[nextTask !== "Выполнено"]) currentStatus[nextTask] = "В прогрессе";
+
+            return { success: true, data: data };
+        } catch (err) {
+            console.error('Ошибка updateTaskStatus:', err);
+            return { success: false, error: err };
+        }
+    }
+
+    // -------------------------
+    //  Открытие релевантной модалки
+    //  ИМЯ ФУНКЦИИ: openRelevantModal()
+    // -------------------------
+    function openRelevantModal() {
+        const taskOrder = [
+            { key: "registration", modalId: "step1Modal" },
+            { key: "create_classroom", modalId: "step2Modal" },
+            { key: "task_generated", modalId: "step4Modal" },
+            { key: "section_created", modalId: "step4Modal" },
+            { key: "gift_received", modalId: "receiveGift" },
+            { key: "student_invitation", modalId: "" },
+        ];
+
+        for (let task of taskOrder) {
+            if (currentStatus[task.key] !== "Выполнено") {
+                showModal(task.modalId);
+                return;
+            }
+        }
+    }
+
+    // -------------------------
+    //  Универсальный обработчик перехода "Дальше"
+    //  currentKey / nextKey — ключи задач в чеклисте
+    //  currentModalId / nextModalId — id модалок
+    // -------------------------
+    async function handleNext(currentKey, nextKey, currentModalId, nextModalId) {
+        // блокируем кнопку (если нужно) — упрощённо не делаем здесь
+        // отправляем запрос на обновление статусов
+        const res = await updateTaskStatus(currentKey, nextKey);
+        // если успешно — переключаем модалки
+        if (res.success) {
+            hideModal(currentModalId);
+            if (nextModalId) {
+                showModal(nextModalId);
+            } else {
+                // если нет следующей модалки — можно открыть релевантную
+                openRelevantModal();
+            }
+        } else {
+            // при ошибке можно показать уведомление — сейчас console.error
+            console.error('Не удалось переключить шаги');
+        }
+    }
+
+    // -------------------------
+    //  Специальные обработчики
+    // -------------------------
+    let showHelpTexts = false;
+    (function () {
+        'use strict';
+
+        // ---------------- Утилиты ----------------
+
+        // Ждёт появления элементов в DOM с помощью MutationObserver (Promise)
+        function waitForElements(selector, timeout = 3000) {
+            return new Promise((resolve, reject) => {
+                const found = document.querySelectorAll(selector);
+                if (found.length) return resolve(found);
+
+                const observer = new MutationObserver((mutations, obs) => {
+                    const nodes = document.querySelectorAll(selector);
+                    if (nodes.length) {
+                        obs.disconnect();
+                        return resolve(nodes);
+                    }
+                });
+
+                observer.observe(document.documentElement, { childList: true, subtree: true });
+
+                setTimeout(() => {
+                    observer.disconnect();
+                    const nodes = document.querySelectorAll(selector);
+                    if (nodes.length) return resolve(nodes);
+                    reject(new Error('timeout waiting for ' + selector));
+                }, timeout);
+            });
+        }
+
+        // Безопасно перезаписывает taskTypes (mutate если можно, иначе записывает в window)
+        function overwriteTaskTypes(newArray) {
+            try {
+                if (typeof taskTypes !== 'undefined' && Array.isArray(taskTypes)) {
+                    taskTypes.length = 0;
+                    Array.prototype.push.apply(taskTypes, newArray);
+                    return;
+                }
+            } catch (err) {
+                // fallthrough
+            }
+
+            try {
+                window.taskTypes = Array.isArray(newArray) ? newArray.slice() : [];
+                console.log('overwriteTaskTypes: set window.taskTypes');
+            } catch (err) {
+                console.warn('overwriteTaskTypes: failed to set window.taskTypes', err);
+            }
+        }
+
+        // ---------------- Наборы taskTypes ----------------
+
+        const SHORT_TASK_TYPES = [
+            { type: 'wordlist', title: 'Список слов', icon: 'bi-list' },
+            { type: 'test', title: 'Тест', icon: 'bi-check-circle' },
+            { type: 'fillintheblanks', title: 'Заполни пропуски', icon: 'bi-pen' },
+            { type: 'makeasentence', title: 'Составь предложение', icon: 'bi-text-paragraph' },
+            { type: 'trueorfalse', title: 'Правда или ложь', icon: 'bi-check' },
+            { type: 'essay', title: 'Эссе', icon: 'bi-file-earmark-text' },
+            { type: 'note', title: 'Заметка', icon: 'bi-sticky' },
+            { type: 'article', title: 'Статья', icon: 'bi-newspaper' },
+            { type: 'sortintocolumns', title: 'Распредели по колонкам', icon: 'bi-layout-split' },
+        ];
+
+        const FULL_TASK_TYPES = [
+            { type: 'wordlist', title: 'Список слов', icon: 'bi-list' },
+            { type: 'test', title: 'Тест', icon: 'bi-check-circle' },
+            { type: 'fillintheblanks', title: 'Заполни пропуски', icon: 'bi-pen' },
+            { type: 'matchupthewords', title: 'Соотнеси слова', icon: 'bi-arrow-left-right' },
+            { type: 'makeasentence', title: 'Составь предложение', icon: 'bi-text-paragraph' },
+            { type: 'unscramble', title: 'Собери слово', icon: 'bi-puzzle' },
+            { type: 'trueorfalse', title: 'Правда или ложь', icon: 'bi-check' },
+            { type: 'audio', title: 'Аудио', icon: 'bi-volume-up' },
+            { type: 'essay', title: 'Эссе', icon: 'bi-file-earmark-text' },
+            { type: 'note', title: 'Заметка', icon: 'bi-sticky' },
+            { type: 'image', title: 'Картинка', icon: 'bi-image' },
+            { type: 'pdf', title: 'PDF файл', icon: 'bi-file-earmark-pdf' },
+            { type: 'article', title: 'Статья', icon: 'bi-newspaper' },
+            { type: 'sortintocolumns', title: 'Распредели по колонкам', icon: 'bi-layout-split' },
+            { type: 'labelimages', title: 'Подпиши картинку', icon: 'bi-tag' },
+            { type: 'embeddedtask', title: 'Интеграция', icon: 'bi-link-45deg' }
+        ];
+
+        // ---------------- returnTaskTypes (если нужно вызвать извне) ----------------
+        let taskCreatedShown = false;
+        window.returnTaskTypes = function returnTaskTypes() {
+            console.log("called");
+            overwriteTaskTypes(FULL_TASK_TYPES);
+            // при возврате полного набора обычно подсказки скрываем
+            showHelpTexts = true;
+            if (typeof updateTaskStatus === 'function') {
+                try {
+                    showHelpTexts = false;
+                    console.log("change");
+                    updateTaskStatus('task_generated', 'section_created');
+                } catch (err) {
+                    console.warn('returnTaskTypes: updateTaskStatus failed', err);
+                }
+            }
+            if (typeof showModal === 'function') {
+                try {
+                    if (!taskCreatedShown && currentStatus['section_created'] !== "Выполнено") {
+                        showModal('taskCreatedModal');
+                        taskCreatedShown = true;
+                    }
+                } catch (err) {
+                    console.warn('returnTaskTypes: showModal failed', err);
+                }
+            }
+
+        };
+
+        window.completeSectionForNews = function completeSectionForNews() {
+            hideModal('generationModal');
+            if (currentStatus["section_created"] !== "Выполнено") {
+                updateTaskStatus("section_created", "gift_received");
+                setTimeout(function () {
+                    showModal("congratsModal");
+                }, 10000);
+            }
+        }
+
+        // ---------------- Основной код (listeners) ----------------
+        document.addEventListener('DOMContentLoaded', function () {
+            function byId(id) {
+                return document.getElementById(id);
+            }
+
+            const guideNext = byId('guideNextBtn');
+            if (guideNext) {
+                guideNext.addEventListener('click', function () {
+                    window.location.href = "/home";
+                });
+            }
+
+            const step1Next = byId('step1NextBtn');
+            if (step1Next) {
+                step1Next.addEventListener('click', function () {
+                    if (typeof handleNext === 'function') {
+                        handleNext('registration', 'create_classroom', 'step1Modal', 'step2Modal');
+                    } else {
+                        console.warn('handleNext is not defined');
+                    }
+                });
+            }
+
+            const startClassBtn = byId('startClassBtn');
+            if (startClassBtn) {
+                startClassBtn.addEventListener('click', async function () {
+                    try {
+                        if (window.currentStatus && currentStatus['create_classroom'] !== 'В прогрессе') {
+                            if (typeof updateTaskStatus === 'function') {
+                                await updateTaskStatus('registration', 'create_classroom');
+                            }
+                        }
+                    } catch (err) {
+                        console.warn('startClassBtn click: updateTaskStatus error', err);
+                    }
+                    if (typeof hideModal === 'function') hideModal('step2Modal');
+                    if (typeof showModal === 'function') showModal('createClassroomModal');
+                });
+            }
+
+            const createCourseBtn = byId('createCourseBtn');
+            if (createCourseBtn) {
+                createCourseBtn.addEventListener('click', async function () {
+                    try {
+                        if (window.currentStatus) {
+                            if (typeof updateTaskStatus === 'function') {
+                                await updateTaskStatus('create_classroom', 'task_generated');
+                            }
+                        }
+                    } catch (err) {
+                        console.warn('createCourseBtn click: updateTaskStatus error', err);
+                    }
+                    if (typeof hideModal === 'function') hideModal('step4Modal');
+                    if (typeof showModal === 'function') showModal('addCourseModal');
+                });
+            }
+
+            // Логика режимов
+            const infoStatusContainer = byId('infoStatusContainer');
+            if (infoStatusContainer) {
+                const statusMode = infoStatusContainer.dataset.mode;
+                if (!window.currentStatus) window.currentStatus = {};
+
+                if (statusMode === 'generation') {
+                    if (currentStatus['task_generated'] !== 'Выполнено') {
+                        window.showHelpTexts = true;
+                        showModal("addTaskGuideModal");
+
+                        // Устанавливаем укороченный набор taskTypes
+                        overwriteTaskTypes(SHORT_TASK_TYPES);
+
+                    } else if (currentStatus['section_created'] !== 'Выполнено') {
+                        if (typeof showModal === 'function') showModal('taskCreatedModal');
+                    }
+                }
+            }
+        });
+    })();
+</script>
+
+
+
+
+
+<!-- Чек лист -->
+<!-- Иконка чек-листа -->
+<button id="checklistBtn" class="btn btn-light rounded-circle position-fixed shadow d-none"
+        style="bottom:20px; width:50px; height:50px; z-index:1050;"
+        aria-expanded="false" aria-controls="checklistPanel" title="Чек-лист">
+    <i class="bi bi-card-checklist fs-4" aria-hidden="true"></i>
+    <span class="visually-hidden">Открыть чек-лист</span>
+</button>
+
+<!-- Панель чек-листа -->
+<div id="checklistPanel" class="card shadow position-fixed"
+     style="bottom:80px; max-width:360px; width:90vw; display: none; z-index:10500;"
+     role="region" aria-label="Чек-лист заданий">
+    <div class="card-header d-flex justify-content-between align-items-center bg-white">
+        <span class="fw-bold">Чек-лист</span>
+        <button type="button" class="btn-close btn-close-black btn-sm" aria-label="Закрыть чек-лист"></button>
+    </div>
+
+    <div class="card-body p-2">
+        <ul id="checklistItems" class="list-unstyled mb-0">
+            <!-- 1. Регистрация -->
+            <li class="d-flex align-items-start mb-3 checklist-item" data-step="registration">
+                <div class="me-2">
+                    <span class="status-dot d-inline-flex rounded-circle align-items-center justify-content-center"
+                          style="width:20px; height:20px; font-size:0.75rem;"></span>
+                </div>
+                <div>
+                    <div class="fw-bold"><a href="{% url 'home' %}" class="text-decoration-none">Регистрация</a></div>
+                    <div class="small text-muted checklist-desc">Начни знакомство с платформой</div>
+                </div>
+            </li>
+
+            <!-- 2. Создать класс -->
+            <li class="d-flex align-items-start mb-3 checklist-item" data-step="create_classroom">
+                <div class="me-2">
+                    <span class="status-dot d-inline-flex rounded-circle align-items-center justify-content-center"
+                          style="width:20px; height:20px; font-size:0.75rem;"></span>
+                </div>
+                <div>
+                    <div class="fw-bold">
+                        <a href="{% url 'home' %}" class="text-decoration-none">Создать первый класс</a>
+                    </div>
+                    <div class="small text-muted checklist-desc">Добавь виртуальный класс для учеников</div>
+                </div>
+            </li>
+
+            <!-- 4. Создать уникальный урок -->
+            <li class="d-flex align-items-start mb-3 checklist-item" data-step="unique_lesson">
+                <div class="me-2">
+                    <span class="status-dot d-inline-flex rounded-circle align-items-center justify-content-center"
+                          style="width:20px; height:20px; font-size:0.75rem;"></span>
+                </div>
+                <div>
+                    <div class="fw-bold">
+                        <a href="{% url 'home' %}" class="text-decoration-none">Создать уникальный урок</a>
+                    </div>
+                    <div class="small text-muted checklist-desc">Сгенерируй задание или выбери готовый</div>
+                </div>
+            </li>
+
+            <!-- 6. Все готово — приглашай первого ученика (скрыто по умолчанию) -->
+            <li class="align-items-start mb-3 checklist-item" data-step="invite_ready" id="student_invitation_point" style="display: none;">
+                <div class="me-2">
+                    <span class="status-dot d-inline-flex rounded-circle align-items-center justify-content-center"
+                          style="width:20px; height:20px; font-size:0.75rem;"></span>
+                </div>
+                <div>
+                    <div class="text-start">
+                        <button onclick="showModal('studentInviteModal'); document.getElementById('checklistPanel').style.display = 'none';"
+                                class="btn border-0 p-0 m-0 text-primary text-start fw-bold text-decoration-none">
+                            Все готово — приглашай первого ученика 🎉
+                        </button>
+                    </div>
+                    <div class="small text-muted checklist-desc">Теперь ты полностью готов к работе</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card-footer d-flex flex-column gap-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">Прогресс</small>
+            <small id="checklistPercent" class="fw-bold">0% выполнено</small>
+        </div>
+        <div class="progress" style="height:8px;">
+            <div id="checklistProgressBar" class="progress-bar" role="progressbar" style="width:0%;" aria-valuemin="0"
+                 aria-valuemax="100"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // --- Элементы панели ---
+        const checklistToggleBtn = document.getElementById("checklistBtn");
+        const checklistPanelEl = document.getElementById("checklistPanel");
+        const checklistCloseBtn = checklistPanelEl ? checklistPanelEl.querySelector(".btn-close") : null;
+        const checklistItemsContainer = document.getElementById("checklistItems");
+        const checklistPercentEl = document.getElementById("checklistPercent");
+        const checklistProgressBarEl = document.getElementById("checklistProgressBar");
+        if (infoStatusContainer) {
+            const statusMode = infoStatusContainer.dataset.mode;
+            if (statusMode === 'home') {
+                checklistToggleBtn.classList.remove('d-none');
+                checklistToggleBtn.style.right = "20px";
+                checklistPanelEl.style.right = "20px";
+            } else {
+                checklistToggleBtn.classList.remove('d-none');
+                checklistToggleBtn.style.left = "20px";
+                checklistPanelEl.style.left = "20px";
+            }
+        }
+
+        // safety: если элементов нет — ничего не делаем
+        if (!checklistToggleBtn || !checklistPanelEl || !checklistItemsContainer) {
+            console.warn("Checklist: не все DOM-элементы найдены, чек-лист отключён.");
+            return;
+        }
+
+        // --- Toggle панели: надежное открытие/закрытие ---
+        const openChecklistPanel = () => {
+            checklistPanelEl.style.display = "block";
+            checklistToggleBtn.setAttribute("aria-expanded", "true");
+            // фокусируем панель для удобства клавиатурной навигации
+            checklistPanelEl.setAttribute("tabindex", "-1");
+            checklistPanelEl.focus();
+        };
+        const closeChecklistPanel = () => {
+            checklistPanelEl.style.display = "none";
+            checklistToggleBtn.setAttribute("aria-expanded", "false");
+            // вернуть фокус на кнопку
+            checklistToggleBtn.focus();
+        };
+        const toggleChecklistPanel = (e) => {
+            if (e && e.stopPropagation) e.stopPropagation();
+            checklistPanelEl.style.display === "block" ? closeChecklistPanel() : openChecklistPanel();
+        };
+
+        // предотвращаем "молниеносное" закрытие: останавливаем всплытие на кнопках
+        checklistToggleBtn.addEventListener("click", toggleChecklistPanel);
+        checklistToggleBtn.addEventListener("click", (e) => e.stopPropagation());
+        if (checklistCloseBtn) {
+            checklistCloseBtn.addEventListener("click", function (e) {
+                e.stopPropagation();
+                closeChecklistPanel();
+            });
+        }
+        // клики внутри панели не закрывают её
+        checklistPanelEl.addEventListener("click", (e) => e.stopPropagation());
+        // Закрывать при клике вне панели
+        document.addEventListener("click", (e) => {
+            if (checklistPanelEl.style.display === "block" && !checklistPanelEl.contains(e.target) && !checklistToggleBtn.contains(e.target)) {
+                closeChecklistPanel();
+            }
+        });
+        // Закрывать по Escape
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && checklistPanelEl.style.display === "block") {
+                closeChecklistPanel();
+            }
+        });
+
+        // --- Нормализация статуса в 'completed'|'in_progress'|'not_started' ---
+        function normalizeChecklistStatus(val) {
+            if (val === null || typeof val === "undefined") return "not_started";
+            const s = String(val).toLowerCase().trim();
+
+            // completed hints
+            if (s.includes("выполн") || s.includes("заверш") || s.includes("completed") || s.includes("done") || s === "true") {
+                return "completed";
+            }
+            // in progress hints
+            if (s.includes("в процессе") || s.includes("in_progress") || s.includes("in progress") || s.includes("progress") || s.includes("pending")) {
+                return "in_progress";
+            }
+            // boolean-like positive
+            if (s === "yes" || s === "1") return "completed";
+
+            // not started hints
+            if (s.includes("не приступал") || s.includes("not started") || s.includes("not_started") || s.includes("false")) {
+                return "not_started";
+            }
+
+            // Короткая строка с цифрой — вероятно прогресс/дата/ид => in_progress (консервативно)
+            if (s.length > 0 && s.length < 30 && /\d/.test(s)) {
+                return "in_progress";
+            }
+
+            // По умолчанию — not_started
+            return "not_started";
+        }
+
+        let statusSource = currentStatus;
+
+        // --- Вычисление статусов составных шагов ---
+        function computeUniqueLessonStepStatus(statusSource) {
+            const taskGen = normalizeChecklistStatus(statusSource.task_generated);
+            const sectionGen = normalizeChecklistStatus(statusSource.section_created);
+
+            if (taskGen === "completed" && sectionGen === "completed") return "completed";
+            if (taskGen === "in_progress" || sectionGen === "in_progress" || taskGen === "completed" || sectionGen === "completed") return "in_progress";
+            return "not_started";
+        }
+
+        function computeInviteStudentStepStatus(statusSource) {
+            const inv = normalizeChecklistStatus(statusSource.student_invitation);
+            const invUse = normalizeChecklistStatus(statusSource.student_invitation_use);
+            const gift = normalizeChecklistStatus(statusSource.gift_received);
+
+            if (gift === "completed") return "completed";
+            if (inv === "in_progress" || invUse === "in_progress" || inv === "completed" || invUse === "completed") return "in_progress";
+            return "not_started";
+        }
+
+        // --- Утилита: заменить node <a> на plain text (span), сохраняя aria attrs ---
+        function replaceInteractiveWithText(el) {
+            if (!el) return;
+
+            const text = el.textContent.trim();
+            const span = document.createElement("span");
+            span.textContent = text;
+            span.classList.remove("text-primary");
+
+            // сохраняем aria-label, если есть
+            if (el.getAttribute("aria-label")) {
+                span.setAttribute("aria-label", el.getAttribute("aria-label"));
+            }
+
+            el.replaceWith(span);
+        }
+
+        // --- Утилита: обеспечить кликабельность заголовка (создать <a> только для in_progress) ---
+        function ensureClickableTitleForInProgress(liEl, stepKey) {
+            const titleContainer = liEl.querySelector(".fw-bold");
+            if (!titleContainer) return;
+
+            const existingAnchor = titleContainer.querySelector("a");
+            if (existingAnchor) {
+                // если ссылка есть, делаем её интерактивной (оставляем href если он есть)
+                existingAnchor.setAttribute("role", "link");
+                existingAnchor.style.cursor = "pointer";
+                // если это внутренняя логика — триггерим событие при клике (если ссылка ведёт в '#', предотвратим дефолт)
+                existingAnchor.addEventListener("click", function (e) {
+                    if (this.getAttribute("href") === "#" || this.getAttribute("href") === "" || this.dataset.action) {
+                        e.preventDefault();
+                        document.dispatchEvent(new CustomEvent("checklist:action", { detail: { step: stepKey } }));
+                    }
+                }, { once: true });
+                return;
+            }
+
+            // если ссылки нет — создаём "универсальную" ссылку, которая эмитирует событие
+            const text = titleContainer.textContent.trim();
+            const a = document.createElement("a");
+            a.href = "#";
+            a.className = "text-decoration-none";
+            a.textContent = text;
+            a.setAttribute("role", "link");
+            a.addEventListener("click", function (e) {
+                e.preventDefault();
+                document.dispatchEvent(new CustomEvent("checklist:action", { detail: { step: stepKey } }));
+            });
+
+            titleContainer.textContent = "";
+            titleContainer.appendChild(a);
+        }
+
+        // --- Рендеринг чек-листа по переданному объекту статусов ---
+        function renderChecklistFromStatus(statusSource) {
+            // Используем уже объявленный в файле currentStatus (ожидается, что он есть)
+            const source = (statusSource && typeof statusSource === "object") ? statusSource : (currentStatus || {});
+
+            const checklistItemEls = Array.from(document.querySelectorAll("#checklistItems .checklist-item"));
+            const rawStatusMap = {
+                registration: normalizeChecklistStatus(source.registration),
+                create_classroom: normalizeChecklistStatus(source.create_classroom),
+                unique_lesson: computeUniqueLessonStepStatus(source),
+            };
+
+            // ⚡️ Превращаем "in_progress" в "not_started", чтобы оставить контроль циклу
+            const statusMap = {};
+            Object.keys(rawStatusMap).forEach(key => {
+                statusMap[key] = rawStatusMap[key] === "in_progress" ? "not_started" : rawStatusMap[key];
+            });
+
+            let completedStepsCount = 0;
+            let inProgressAssigned = false;
+
+            checklistItemEls.forEach((li) => {
+                const stepKey = li.getAttribute("data-step");
+                const statusDotEl = li.querySelector(".status-dot");
+                const descriptionEl = li.querySelector(".checklist-desc");
+                const titleContainer = li.querySelector(".fw-bold");
+                let stepStatus = statusMap[stepKey] || "not_started";
+
+                // ✅ только один шаг может быть в прогрессе
+                if (stepStatus === "not_started" && !inProgressAssigned) {
+                    stepStatus = "in_progress";
+                    inProgressAssigned = true;
+                } else if (stepStatus === "not_started" && inProgressAssigned) {
+                    stepStatus = "not_started"; // явно фиксируем
+                }
+
+                // --- оформление статуса ---
+                statusDotEl.className = "status-dot d-inline-flex rounded-circle align-items-center justify-content-center";
+
+                if (stepStatus === "completed") {
+                    statusDotEl.classList.add("bg-success", "text-white");
+                    statusDotEl.textContent = "✓";
+                    if (descriptionEl) descriptionEl.textContent = "Успешно завершено";
+                    completedStepsCount++;
+                    li.classList.remove("opacity-75");
+                    li.style.display = "flex";
+
+                    if (titleContainer) {
+                        const anchor = titleContainer.querySelector("a");
+                        const button = titleContainer.querySelector("button");
+
+                        if (anchor) {
+                            replaceInteractiveWithText(anchor);
+                        } else if (button) {
+                            replaceInteractiveWithText(button);
+                        } else {
+                            titleContainer.textContent = titleContainer.textContent.trim();
+                        }
+                    }
+                } else if (stepStatus === "in_progress") {
+                    statusDotEl.classList.add("bg-warning", "mt-1");
+                    statusDotEl.innerHTML = "";
+                    if (descriptionEl) descriptionEl.textContent = "В процессе — осталось немного";
+                    li.classList.remove("opacity-75");
+                    li.style.display = "flex";
+
+                    if (titleContainer) ensureClickableTitleForInProgress(li, stepKey);
+                } else { // not_started
+                    statusDotEl.classList.add("bg-light", "border", "mt-1");
+                    statusDotEl.innerHTML = "";
+                    if (descriptionEl) {
+                        const hints = {
+                            registration: "Заведи аккаунт и подтверди e-mail",
+                            create_classroom: "Добавь виртуальный класс для учеников",
+                            profile_fill: "Заполни профиль для лучшего взаимодействия",
+                            unique_lesson: "Научись планировать уроки моментально",
+                            feedback: "Расскажи как прошло знакомство с платформой"
+                        };
+                        descriptionEl.textContent = hints[stepKey] || "Не начато";
+                    }
+                    li.classList.add("opacity-75");
+
+                    if (titleContainer) {
+                        const anchor = titleContainer.querySelector("a");
+                        const button = titleContainer.querySelector("button");
+
+                        if (anchor) {
+                            replaceInteractiveWithText(anchor);
+                        } else if (button) {
+                            replaceInteractiveWithText(button);
+                        }
+                    }
+                }
+            });
+
+            // Обновляем прогресс
+            const completionPercent = Math.round((completedStepsCount / 3) * 100);
+            if (checklistPercentEl) checklistPercentEl.textContent = `${completionPercent}% выполнено`;
+            if (checklistProgressBarEl) {
+                checklistProgressBarEl.style.width = `${completionPercent}%`;
+                checklistProgressBarEl.classList.remove("bg-success", "bg-info", "bg-warning", "bg-secondary");
+                if (completionPercent >= 80) checklistProgressBarEl.classList.add("bg-success");
+                else if (completionPercent >= 50) checklistProgressBarEl.classList.add("bg-primary");
+                else if (completionPercent > 0) checklistProgressBarEl.classList.add("bg-warning");
+                else checklistProgressBarEl.classList.add("bg-secondary");
+            }
+
+            // Обновление title кнопки
+            checklistToggleBtn.setAttribute("title", `Чек-лист — ${completionPercent}% выполнено`);
+        }
+
+        // --- Экспортируемая функция: обновляет чек-лист ---
+        // Можно вызывать: window.updateChecklist() или window.updateChecklist(newStatusObject)
+        window.updateChecklist = function (newStatus) {
+            if (newStatus && typeof newStatus === "object") {
+                try {
+                    window.currentStatus = newStatus;
+                } catch (err) {
+                    console.warn("Не удалось записать в window.currentStatus:", err);
+                }
+            }
+            renderChecklistFromStatus(currentStatus || {});
+        };
+
+        // Initial render
+        window.updateChecklist();
+    });
+</script>

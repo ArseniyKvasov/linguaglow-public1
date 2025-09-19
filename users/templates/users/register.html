@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>LinguaGlow - Регистрация</title>
+    <!-- Подключение Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Подключение Google Fonts (Montserrat) -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .btn-show-password {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .btn-show-password.active {
+            color: #007bff;
+        }
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .form-check-input:checked {
+            background-color: #198754;
+            border-color: #198754;
+        }
+
+        .btn-show-password:hover {
+            color: #198754 !important;
+        }
+
+    </style>
+
+</head>
+<body>
+        <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=103833195', 'ym');
+
+        ym(103833195, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/103833195" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="text-center text-primary mb-4 fw-bold">Регистрация в LinguaGlow</h2>
+
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <!-- Поле username -->
+                            <div class="mb-3">
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.username.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Поле email -->
+                            <div class="mb-3">
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.email.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Поле пароля -->
+                            <div class="mb-3 position-relative">
+    {{ form.password }}
+    <button type="button"
+            class="btn btn-show-password"
+            style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%);
+                   border: none; background: transparent; color: #6c757d; font-size: 1.3rem; padding: 0;">
+        <i class="bi bi-eye"></i>
+    </button>
+
+    {% if form.password.errors %}
+        <div class="text-danger small mt-1">
+            {% for error in form.password.errors %}
+                {{ error }}
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+                            <!-- Поле роли -->
+                            <div class="mb-3">
+                                {{ form.role }}
+                                {% if form.role.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.role.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3 d-flex w-100 gap-1">
+                                <input type="radio" class="btn-check" name="gender" id="gender-female" autocomplete="off" value="female" checked>
+                                <label class="btn btn-outline-primary flex-fill rounded-start" for="gender-female">Женский</label>
+
+                                <input type="radio" class="btn-check" name="gender" id="gender-male" autocomplete="off" value="male">
+                                <label class="btn btn-outline-primary flex-fill rounded-end" for="gender-male">Мужской</label>
+
+                                {% if form.gender.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.gender.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <input type="hidden" name="next" value="{{ next }}">
+                            <button type="submit" class="btn btn-success w-100 py-2 fw-bold">Создать аккаунт</button>
+
+                            <p class="small text-muted mt-2 text-center">
+                                Создавая аккаунт, я соглашаюсь с
+                                <a href="{% static 'user_policy.txt' %}" target="_blank" class="text-decoration-none">Пользовательским соглашением</a>
+                                и даю
+                                <a href="{% static 'user_agreement_data_policy.txt' %}" target="_blank" class="text-decoration-none">Согласие на обработку данных</a>.
+                            </p>
+                        </form>
+
+                        <!-- Ссылка на вход -->
+                        <div class="text-center mt-2">
+                            <small class="text-muted">
+                                Уже есть аккаунт?
+                                <a href="{% url 'login' %}?next={{ next }}" class="text-decoration-none fw-bold">Войти</a>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                document.querySelector('.btn-show-password').addEventListener('click', function() {
+                    const passwordInput = document.getElementById('{{ form.password.id_for_label }}');
+                    const icon = this.querySelector('i');
+
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        icon.classList.replace('bi-eye', 'bi-eye-slash');
+                    } else {
+                        passwordInput.type = 'password';
+                        icon.classList.replace('bi-eye-slash', 'bi-eye');
+                    }
+                });
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+</body>
+</html>

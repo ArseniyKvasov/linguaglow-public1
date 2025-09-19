@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Что-то пошло не так — LinguaGlow</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  {% load static %}
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+  <style>
+    body {
+      background: linear-gradient(135deg, #fffde7, #e1f5fe);
+      font-family: 'Montserrat', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .error-container {
+      text-align: center;
+      padding: 40px;
+      background-color: white;
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+    }
+    .error-code {
+      font-size: 72px;
+      font-weight: 800;
+      color: #f44336;
+    }
+    .message {
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 15px;
+    }
+    .logo {
+      width: 80px;
+      margin-bottom: 15px;
+      animation: glow 2s infinite alternate;
+    }
+    .emoji {
+      font-size: 42px;
+    }
+    @keyframes glow {
+      from {
+        filter: drop-shadow(0 0 0px #00e5ff);
+      }
+      to {
+        filter: drop-shadow(0 0 12px #00e5ff);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="error-container">
+    <div class="emoji">😓🔥🔧</div>
+    <div class="error-code">500</div>
+    <div class="message">Ой! На сервере что-то заглючило.</div>
+    <p class="text-muted">Мы уже получили сигнал и скоро всё починим. Попробуй немного позже 🙌</p>
+    <a href="{% url 'home' %}" class="btn btn-outline-primary mt-3">На главную</a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,51 @@
+{# templates/admin/user_metrics_summary.html #}
+<div class="mb-3">
+    <div class="row g-2">
+        <div class="col-auto">
+            <div class="card p-2">
+                <div class="small text-muted">Users in selection</div>
+                <div class="h5 mb-0">{{ total|default:0 }}</div>
+            </div>
+        </div>
+
+        <div class="col-auto">
+            <div class="card p-2">
+                <div class="small text-muted">D1 retention</div>
+                <div class="h5 mb-0">{{ d1_count|default:0 }} ({{ d1_percent|default:0 }}%)</div>
+            </div>
+        </div>
+
+        <div class="col-auto">
+            <div class="card p-2">
+                <div class="small text-muted">D3 retention</div>
+                <div class="h5 mb-0">{{ d3_count|default:0 }} ({{ d3_percent|default:0 }}%)</div>
+            </div>
+        </div>
+
+        <div class="col-auto">
+            <div class="card p-2">
+                <div class="small text-muted">D7 retention</div>
+                <div class="h5 mb-0">{{ d7_count|default:0 }} ({{ d7_percent|default:0 }}%)</div>
+            </div>
+        </div>
+
+        <div class="col-auto">
+            <div class="card p-2">
+                <div class="small text-muted">Users with &gt;1 generation</div>
+                <div class="h5 mb-0">{{ multi_gen_count|default:0 }}</div>
+            </div>
+        </div>
+
+        <div class="col-auto">
+            <div class="card p-2">
+                <div class="small text-muted">Teachers onboarded (done)</div>
+                <div class="h5 mb-0">{{ teachers_onboarded_done|default:0 }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Ошибка отображения если есть #}
+{% if error %}
+    <div class="alert alert-danger small">{{ error }}</div>
+{% endif %}

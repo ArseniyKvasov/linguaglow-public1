@@ -1,0 +1,339 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <title>LinguaGlow - PDF</title>
+    {% load static %}
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <style>
+        body {
+            font-family: 'Montserrat', 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Каждому блоку не позволяем разрываться на странице */
+        .pdf-element {
+            page-break-inside: avoid;
+            margin-bottom: 8px;
+        }
+        /* Подписать картинки */
+        .square-image-container {
+            width: 100%; /* Заполняет родительский контейнер */
+            position: relative;
+            overflow: hidden;
+            padding-top: 100%; /* Соотношение 1:1 делает контейнер квадратным */
+        }
+
+        .square-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .square-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Обрезает изображение, чтобы оно заполнило квадрат */
+            border-radius: 8px; /* Закруглённые углы, можно убрать */
+        }
+    </style>
+</head>
+<body>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=103833195', 'ym');
+
+        ym(103833195, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+    </script>
+
+    <form style="display: none;">{% csrf_token %}</form>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm rounded-bottom sticky-top" style="z-index: 10;">
+        <div class="container-fluid d-flex align-items-center">
+            <button type="button" class="btn btn-link text-secondary me-3 p-0" onclick="history.back();" title="Назад" style="font-size: 1.5rem; line-height: 1;">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+            <a class="navbar-brand text-primary fw-bold" href="{% url 'home' %}">LinguaGlow</a>
+        </div>
+    </nav>
+
+    <div class="m-2 m-md-3 m-lg-5 p-2 border-0 d-flex justify-content-center">
+        <div class="col-12 col-md-9 col-lg-8 shadow rounded">
+            {# Кнопка скачать сверху (использует lesson.pdf_url если задан) #}
+            <div class="d-flex justify-content-end p-2">
+                <button
+                    id="download-lesson-pdf"
+                    class="btn btn-sm btn-primary"
+                    type="button"
+                    data-bs-toggle="modal" data-bs-target="#pdfOptionsModal"
+                    data-pdf-url="{{ lesson.pdf_url|default:'' }}"
+                >
+                    Скачать PDF
+                </button>
+            </div>
+
+            <div id="task-list" data-lesson-name="{{ lesson.name }}" data-pdf-url="{{ lesson.pdf_url|default:'' }}">
+                {% for task in tasks %}
+                    <div class="align-items-start m-3 full-task-container" data-task-id="{{ task.id }}" style="display: none;">
+                        <div class="task-item card border-0 rounded flex-grow-1"
+                             id="{{ task.id }}"
+                             data-section-id="{{ task.section.id }}"
+                             data-task-type="{{ task.content_type.model }}">
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div id="pdf-container" style="width: 794px; display: none; line-height: 1.1;"></div>
+
+    <!-- Кнопка снизу -->
+    <div class="panel position-fixed bottom-0 end-0 m-4 p-2 bg-white shadow rounded d-flex align-items-center gap-2" style="z-index: 1050;">
+        <!-- Кнопка "Скачать PDF" -->
+        <button type="button" class="btn border-0 d-flex align-items-center"
+                data-bs-toggle="modal" data-bs-target="#pdfOptionsModal"
+                title="Скачать PDF" disabled>
+            <i class="bi bi-file-earmark-arrow-down-fill bi-lg text-primary"></i>
+        </button>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО НАСТРОЕК ГЕНЕРАЦИИ -->
+    <div class="modal fade" id="pdfOptionsModal" tabindex="-1" aria-labelledby="pdfOptionsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content rounded-4 shadow position-relative overflow-hidden">
+
+                <!-- Оверлей загрузки -->
+                <div id="pdfLoadingOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white d-none d-flex flex-column justify-content-center align-items-center" style="z-index: 1050;">
+                    <div class="spinner-border text-primary mb-3 d-block" style="width: 2rem; height: 2rem;" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <div id="pdfLoadingText" class="small fw-semibold d-block">Готовим ваш PDF...</div>
+                    <div id="warningText" class="small d-block">Занимает до 5 минут</div>
+
+
+                    <!-- Прогресс (показывается, когда начинаем генерацию) -->
+                    <div id="pdfProgressContainer" class="mt-3 d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-2 small">
+                            <div id="pdfProgressText">Заданий: 0 / 0</div>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div id="pdfProgressBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-semibold" id="pdfOptionsModalLabel">Настройки PDF</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="pdfOptionsForm" class="small">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="removeEmojis">
+                            <label class="form-check-label" for="removeEmojis">Удалить эмодзи</label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="grayscale">
+                            <label class="form-check-label" for="grayscale">Сделать черно-белым</label>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fontSize" class="form-label">Размер шрифта (px)</label>
+                            <input type="number" class="form-control form-control-sm rounded-3" id="fontSize" value="14" min="10" max="24">
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer border-0 pt-0 d-flex justify-content-between">
+                    <button type="button" class="btn btn-light btn-sm rounded-pill px-3" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" id="downloadPdfBtn">Скачать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if is_new %}
+    <!-- Floating Help Button -->
+    <button class="btn btn-light border rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center"
+            id="helpBtn"
+            style="position: fixed; bottom: 20px; left: 20px; width: 45px; height: 45px; z-index: 1050;">
+        <i class="bi bi-question-lg fs-4 text-secondary"></i>
+    </button>
+
+    <!-- Help Window -->
+    <div id="helpWindow" class="card border-0 shadow-lg rounded-3"
+         style="display: none; position: fixed; bottom: 80px; left: 20px;
+                max-width: 340px; max-height: 70vh; width: 320px;
+                z-index: 1050; overflow-y: auto; backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.95);">
+
+        <!-- Header -->
+        <div class="card-header bg-transparent border-0 py-3 d-flex justify-content-between align-items-center">
+            <span class="fw-semibold text-dark fs-5">
+                <i class="bi bi-question-circle me-2 text-primary"></i>
+                Справка
+            </span>
+            <button type="button" class="btn-close btn-sm" id="helpClose"></button>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body p-0">
+            <div class="accordion accordion-flush" id="helpAccordion">
+                <!-- Virtual Board Issue -->
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-3 px-4 text-dark bg-light-hover"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                            <i class="bi bi-display me-3 text-warning"></i>
+                            <span class="fw-medium">Проблема с виртуальной доской</span>
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body px-4 py-3 small text-muted bg-light rounded-bottom">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-lightbulb text-warning me-2 mt-1"></i>
+                                <span>Попробуйте выбрать другую игру от WordWall или Quizlet</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty Elements -->
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-3 px-4 text-dark bg-light-hover"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                            <i class="bi bi-qr-code me-3 text-info"></i>
+                            <span class="fw-medium">Пустые элементы на странице</span>
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body px-4 py-3 small text-muted bg-light rounded-bottom">
+                            <div class="d-flex align-items-start mb-2">
+                                <i class="bi bi-wifi text-info me-2 mt-1"></i>
+                                <span>Подключитесь к Wi-Fi вместо мобильного интернета</span>
+                            </div>
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-shield-check text-info me-2 mt-1"></i>
+                                <span>Попробуйте включить/выключить VPN</span>
+                            </div>
+                            <div class="mt-2 text-center">
+                                <small class="text-muted">Если не помогло — обратитесь в поддержку</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PDF Download -->
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-3 px-4 text-dark bg-light-hover"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                            <i class="bi bi-file-earmark-pdf me-3 text-danger"></i>
+                            <span class="fw-medium">Скачать материалы</span>
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body px-4 py-3 small text-muted bg-light rounded-bottom text-center">
+                            <button class="btn btn-danger btn-sm fw-medium px-3 py-2 rounded-pill"
+                                    onclick="new bootstrap.Modal(document.getElementById('pdfOptionsModal')).show();
+                                             document.getElementById('helpWindow').style.display='none';">
+                                <i class="bi bi-download me-2"></i>
+                                Скачать PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty Page -->
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-3 px-4 text-dark bg-light-hover"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                            <i class="bi bi-file-earmark me-3 text-secondary"></i>
+                            <span class="fw-medium">Пустая страница</span>
+                        </button>
+                    </h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body px-4 py-3 small text-muted bg-light rounded-bottom">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-plus-circle text-secondary me-2 mt-1"></i>
+                                <span>Нажмите на стрелку в левом верхнем углу</span>
+                            </div>
+                            <div class="d-flex align-items-start mt-2">
+                                <i class="bi bi-puzzle text-secondary me-2 mt-1"></i>
+                                <span>Создайте свои первые задания</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer bg-transparent border-0 py-3 d-flex justify-content-between small">
+            <a href="{% url 'home' %}" class="text-decoration-none text-muted hover-text-primary"
+               onclick="document.getElementById('helpWindow').style.display='none'">
+                <i class="bi bi-house me-1"></i>Главная
+            </a>
+            <a href="mailto:linguaglow0@gmail.com" class="text-decoration-none text-muted hover-text-primary">
+                <i class="bi bi-envelope me-1"></i>Поддержка
+            </a>
+        </div>
+    </div>
+
+    <!-- JS toggle -->
+    <script>
+        const helpBtn = document.getElementById("helpBtn");
+        const helpWindow = document.getElementById("helpWindow");
+        const helpClose = document.getElementById("helpClose");
+
+        helpBtn.addEventListener("click", () => {
+            helpWindow.style.display = "block";
+        });
+
+        helpClose.addEventListener("click", () => {
+            helpWindow.style.display = "none";
+        });
+    </script>
+    {% endif %}
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script src="{% static 'updated_functions/show_basic_tasks.js' %}"></script>
+
+    {% if showModalOnLoad %}
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const modalEl = document.getElementById("pdfOptionsModal");
+            if (modalEl) {
+                const modal = new bootstrap.Modal(modalEl, { backdrop: "static", keyboard: false });
+                modal.show();
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,199 @@
+.task-item.dragging {
+    opacity: 0.5;
+    transform: rotate(3deg);
+    max-height: 200px;
+}
+
+/* Стиль для кнопки перемещения */
+#dragToggle {
+    transition: all 0.3s ease;
+}
+
+#dragToggle.btn-primary i {
+    color: white !important;
+}
+
+.sortable-ghost {
+    opacity: 0.5;
+}
+
+
+
+/* Добавление урока в класс */
+.classroom-card {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.classroom-card:hover {
+    background-color: #f8f9fa;
+    border-color: var(--bs-primary);
+}
+
+.classroom-card.active {
+    background-color: var(--bs-primary-bg-subtle);
+    border-color: var(--bs-primary);
+}
+
+.classroom-card.active .text-muted {
+    color: var(--bs-primary) !important;
+}
+
+
+/* Правда-ложь, тест */
+.correct-radio {
+   background-color: rgba(40, 167, 69, 0.2);
+}
+
+/* Ползунок генерации */
+/* Кастомизация цвета линии и ползунка */
+.custom-range::-webkit-slider-thumb {
+    background-color: #4A90E2; /* Голубой, например */
+    border: none;
+}
+
+.custom-range::-webkit-slider-runnable-track {
+    background-color: #cce5ff; /* Светло-голубая линия */
+}
+
+.custom-range::-moz-range-thumb {
+    background-color: #4A90E2;
+    border: none;
+}
+
+.custom-range::-moz-range-track {
+    background-color: #cce5ff;
+}
+
+/* Изображение */
+.image-upload-area {
+    transition: background-color 0.3s, border 0.3s;
+}
+
+.image-upload-area.drag-over {
+    background-color: #e0f7fa;
+    border: 2px dashed #007bff;
+}
+
+/* Подписать картинки */
+.image-square img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+}
+
+
+/* Контейнер с прокруткой, но без видимого скроллбара */
+.tabs-scroll-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch; /* плавный скролл на iOS */
+    scrollbar-width: none; /* Firefox */
+}
+
+/* Для Chrome, Edge и Safari */
+.tabs-scroll-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Горизонтальный скролл вкладок без видимого скроллбара */
+.nav-tabs {
+    scrollbar-width: none; /* Firefox */
+}
+.nav-tabs::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+}
+
+.nav-tabs {
+    border-bottom: none; /* убираем стандартную линию */
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    border-radius: 8px 8px;
+    margin-right: 8px;
+    padding: 10px 18px;
+    font-weight: 600;
+    color: #555;
+    background: #f8f9fa;
+    transition: background-color 0.3s, color 0.3s;
+    white-space: nowrap;
+    box-shadow: 0 1px 1px rgb(0 0 0 / 0.05);
+}
+
+.nav-tabs .nav-link:hover {
+    background-color: #e9ecef;
+    color: #333;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #0d6efd;
+    color: white;
+    box-shadow: 0 1px 2px rgb(13 110 253 / 0.4);
+}
+
+/* Чтобы при скролле вкладки не слипались */
+.nav-tabs .nav-item {
+    display: inline-flex;
+}
+.dropdown-toggle.no-arrow::after,
+.dropdown-toggle.no-arrow::before {
+    display: none !important;
+}
+
+.custom-toggle-btn {
+    background-color: transparent;
+    border: 1px solid #dee2e6;
+    color: #0d6efd;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease-in-out;
+    box-shadow: none;
+    font-size: 0.875rem;
+}
+
+.custom-toggle-btn:hover {
+    background-color: #f0f8ff;
+}
+
+.btn-check:checked + .custom-toggle-btn {
+    background-color: #0d6efd;
+    color: white;
+    font-weight: 600;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.25);
+}
+.custom-dropdown {
+    position: absolute !important;
+    top: 100%;
+    right: 0;
+    z-index: 1055; /* больше, чем обычные карточки и контейнеры */
+    min-width: max-content;
+    overflow: visible;
+}
+
+.dropdown-item.no-bg:focus,
+.dropdown-item.no-bg:active {
+    background-color: transparent !important;
+    color: inherit !important;
+}
+
+#section-list .drag-handle {
+  cursor: grab;
+  user-select: none;
+  font-size: 1.05rem;
+  opacity: 0.8;
+  display: inline-block;
+  width: 1.25rem;
+  text-align: center;
+}
+
+#section-list li.dragging {
+  opacity: 0.5;
+}
+
+#section-list li.placeholder {
+  border: 2px dashed #e9ecef;
+  height: 46px; /* подогнать под высоту li при необходимости */
+  background: #fafafa;
+}

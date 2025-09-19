@@ -1,0 +1,588 @@
+{% load static %}
+{% load custom_filters %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page_title }}</title>
+    <meta name="description" content="{{ page_meta_description|default:''|escape }}">
+    <meta name="keywords" content="{{ page_keywords|default:''|escape }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <style>
+        body { font-family: 'Montserrat', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+        .hero { background: linear-gradient(90deg,#1e90ff14,#8a2be214); padding: 48px 0; }
+        .lesson-card { transition: transform .12s ease, box-shadow .12s ease; }
+        .lesson-card:hover { transform: translateY(-6px); box-shadow: 0 8px 30px rgba(0,0,0,.08); }
+        .lesson-icon { font-size: 36px; margin-right: 12px; }
+        .lesson-icon-img { width:48px; height:48px; object-fit:cover; border-radius:8px; margin-right:12px; }
+        .level-badge { font-weight:600; }
+        .card-footer .btn { width: 48%; }
+        @media (max-width:576px) {
+            .card-footer .btn { width:100%; margin-bottom:8px; }
+        }
+        .filter-row .form-control, .filter-row .form-select { min-width: 0; }
+    </style>
+</head>
+<body>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=103833195', 'ym');
+
+        ym(103833195, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/103833195" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+
+    <div class="sticky-top bg-white shadow rounded px-3">
+        <nav class="d-flex align-items-center justify-content-between py-3">
+            <a class="d-flex align-items-center text-decoration-none" href="/">
+                <span class="h5 mb-0 fw-bold">LinguaGlow</span>
+            </a>
+            <div>
+                {% if is_authenticated %}
+                    <a href="{% url 'home' %}" class="text-decoration-none fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-person-circle"></i>
+                        Главная
+                    </a>
+                {% else %}
+                    <div>
+                        <a class="btn btn-primary btn-sm" href="{% url 'register' %}">Регистрация</a>
+                        <a class="btn btn-success btn-sm" href="{% url 'login' %}">Вход</a>
+                    </div>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+
+    <div id="landing" class="container py-5">
+        <div class="row align-items-start gy-4">
+            <div class="col-12 col-md-5">
+                <h1 class="h4 mb-3 fw-bold">Рабочие листы для уроков английского</h1>
+
+                <ul class="list-unstyled mb-3">
+                    <li class="d-flex align-items-center mb-2">
+                        <i class="bi bi-magic fs-4 me-2" aria-hidden="true"></i>
+                        <span class="small">Создайте уникальный рабочий лист — <a href="https://linguaglow.ru" target="_blank" rel="noopener" class="link-primary">2 клика</a></span>
+                    </li>
+                    <li class="d-flex align-items-center mb-2">
+                        <i class="bi bi-telegram fs-4 me-2" aria-hidden="true"></i>
+                        <span class="small">Telegram: <a href="https://t.me/linguaglowru" target="_blank" rel="noopener" class="link-primary">@linguaglowru</a></span>
+                    </li>
+                    <li class="d-flex align-items-center">
+                        <i class="bi bi-envelope fs-4 me-2" aria-hidden="true"></i>
+                        <span class="small">Еженедельная рассылка с новыми материалами</span>
+                    </li>
+                </ul>
+
+                {% if not is_subscribed %}
+                <form id="lg-newsletter-form" class="mb-3" action="{% url 'subscribe_email' %}" method="POST" novalidate>
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="email" class="form-control form-control-sm"
+                               name="email"
+                               placeholder="Ваш e-mail"
+                               aria-label="email"
+                               value="{{ email }}",
+                               required>
+                        <button class="btn btn-sm btn-outline-primary" type="submit">Подписаться</button>
+                    </div>
+                </form>
+
+                <div id="success-message" style="display: none; margin: 15px;
+                    padding: 10px; background-color: #d4edda;
+                    color: #155724; border: 1px solid #c3e6cb;
+                    border-radius: 5px; text-align: center;">
+                    <i class="fas fa-rocket"></i> Готово! 🚀
+                </div>
+                {% endif %}
+
+                <div class="d-flex gap-2 align-items-center">
+                    <a href="https://linguaglow.ru" target="_blank" rel="noopener" class="btn btn-sm btn-primary">
+                        Создать лист
+                    </a>
+                    <a href="#"
+                       class="text-decoration-none ms-3"
+                       data-bs-toggle="modal"
+                       data-bs-target="#projectModal">
+                        О платформе
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            /* Минималистичные небольшие стили — можно расширить в вашем основном CSS */
+            #landing .small { line-height: 1.25; }
+            #landing .btn-sm { padding: .35rem .6rem; }
+            /* Легкий отступ у иконок */
+            #landing .bi { vertical-align: -0.125em; }
+        </style>
+    </div>
+
+
+    <main class="container my-5" id="lessons">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4 mb-0">Публичные уроки</h2>
+            <small class="text-muted"><span id="resultsCount">{{ lessons|length }}</span> урок(ов)</small>
+        </div>
+
+        <!-- Фильтры (frontend) -->
+        <div class="row mb-4 filter-row">
+            <div class="col-md-6 col-lg-5 mb-2">
+                <input id="topicSearch" type="search" class="form-control" placeholder="Введите запрос...">
+            </div>
+
+            <!-- селект + крестик в одной строке -->
+            <div class="col-md-6 col-lg-5 mb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <select id="levelFilter" class="form-select" aria-label="Фильтр по уровню">
+                        <option value="">Все уровни</option>
+                        <option value="A1">Beginner</option>
+                        <option value="A2">Elementary</option>
+                        <option value="B1">Intermediate</option>
+                        <option value="B2">Upper-Intermediate</option>
+                        <option value="C1">Advanced</option>
+                    </select>
+
+                    <button id="clearFilters" class="btn border-0 d-flex align-items-center">
+                        <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {% if lessons %}
+            <div class="row g-3" id="lessonsGrid">
+                {% for l in lessons %}
+                    <div class="col-md-6 col-lg-4 p-3">
+                        <div class="card lesson-card h-100 lesson-tile rounded shadow border"
+                             role="article"
+                             data-id="{{ l.id }}"
+                             data-name="{{ l.name|escapejs }}"
+                             data-url="{% url 'public_lesson_preview' l.id %}"
+                             data-pdf-url="{% if l.pdf_file %}{{ l.pdf_file }}{% endif %}"
+                             data-download-url="{% if l.pdf_file %}{% url 'download_public_pdf' l.id %}{% endif %}"
+                             data-level="{{ l.public_data.level|default:'A1' }}"
+                             data-keywords="{{ l.public_data.keywords|default:''|escapejs }}"
+                             data-meta="{{ l.public_data.meta_description|default:''|escapejs }}">
+
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="me-auto d-flex align-items-center">
+                                        {% if l.icon %}
+                                            <i class="{{ l.icon }} lesson-icon" aria-hidden="true"></i>
+                                        {% else %}
+                                            <i class="bi bi-journal-text lesson-icon" aria-hidden="true"></i>
+                                        {% endif %}
+                                        <div class="ms-2">
+                                            <h5 class="card-title mb-0" style="font-size:1rem;">
+                                                {{ l.name|truncatechars:80 }}
+                                            </h5>
+
+                                            {% if l.level in "A1 A2" %}
+                                                <span class="badge bg-success">{{ l.level }}</span>
+                                            {% elif l.level in "B1 B2" %}
+                                                <span class="badge bg-primary">{{ l.level }}</span>
+                                            {% elif l.level in "C1 C2" %}
+                                                <span class="badge bg-warning text-dark">{{ l.level }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ l.level|default:"A1" }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if l.meta_description %}
+                                    <p class="card-text small text-muted mt-2 mb-3" style="flex:1;">
+                                        {{ l.meta_description|truncatechars:120 }}
+                                    </p>
+                                {% else %}
+                                    <p class="card-text small text-muted mt-2 mb-3" style="flex:1;">
+                                        Готовый план урока и рабочие листы. Адаптируйте под нужный формат.
+                                    </p>
+                                {% endif %}
+
+                                <div class="mt-auto card-footer bg-transparent border-top-0 px-0 pb-0 pt-3">
+                                    <div class="d-flex gap-2">
+                                        <button type="button"
+                                                class="btn btn-primary btn-sm btn-view"
+                                                data-url="{% url 'public_lesson_preview' l.id %}"
+                                                title="Посмотреть">
+                                            <i class="bi bi-eye-fill me-1"></i> Посмотреть
+                                        </button>
+
+                                        {% if l.pdf_file %}
+                                            <a href="{% url 'download_public_pdf' l.id %}"
+                                               class="btn btn-success btn-sm"
+                                               title="Скачать">
+                                                <i class="bi bi-download me-1"></i> Скачать
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div id="alert-no-lessons" class="alert alert-warning m-2" style="display: none;">
+                Не удалось найти урок по заданным фильтрам. Создайте его в 2 клика.
+                <a href="{% url 'landing' %}">Нажмите сюда.</a>
+            </div>
+        {% else %}
+            <div class="alert alert-info">Пока нет публичных уроков. Зайдите позже.</div>
+        {% endif %}
+
+
+
+        <!-- Предпросмотр урока -->
+        <div class="modal fade" id="lessonModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content d-flex flex-column" style="height: 90vh;">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="lessonModalLabel">Просмотр урока</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+
+                    <div class="modal-body p-0 flex-grow-1 d-flex flex-column">
+                        <iframe id="lessonIframe" src="" class="w-100 flex-grow-1 border-0" loading="lazy"></iframe>
+                    </div>
+
+                    <!-- Sticky футер -->
+                    <div class="modal-footer sticky-bottom bg-white shadow-sm">
+                        <a id="lessonDownloadBtn" href="#" class="btn btn-success d-none" target="_blank" rel="noopener noreferrer">
+                            <i class="bi bi-download me-1"></i> Скачать
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-4 bg-light mt-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12 col-md-6 text-start">
+                    <small class="text-muted">© {{ now|date:"Y" }} LinguaGlow — материалы для репетиторов английского</small>
+                </div>
+                <div class="col-12 col-md-6 text-end">
+                    <a href="#"
+                       class="text-decoration-none me-3"
+                       data-bs-toggle="modal"
+                       data-bs-target="#projectModal">
+                        О платформе
+                    </a>
+                    <a href="#"
+                       class="text-decoration-none"
+                       data-bs-toggle="modal"
+                       data-bs-target="#contactsModal">
+                        Контакты
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const modalEl = document.getElementById('lessonModal');
+            const modal = new bootstrap.Modal(modalEl);
+            const iframe = document.getElementById('lessonIframe');
+            const downloadBtn = document.getElementById('lessonDownloadBtn');
+
+            document.querySelectorAll('.btn-view').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    const card = this.closest('.lesson-tile');
+                    const url = this.dataset.url || card.dataset.url;
+                    const name = card.dataset.name || "";
+                    // dataset: data-download-url -> dataset.downloadUrl, data-pdf-url -> dataset.pdfUrl
+                    const downloadUrl = card.dataset.downloadUrl || card.dataset.pdfUrl || "";
+
+                    iframe.src = url;
+                    document.getElementById('lessonModalLabel').textContent = name;
+
+                    if (downloadUrl) {
+                        downloadBtn.href = downloadUrl;
+                        downloadBtn.classList.remove("d-none");
+                    } else {
+                        downloadBtn.classList.add("d-none");
+                    }
+
+                    modal.show();
+                });
+            });
+
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                iframe.src = ""; // очищаем iframe при закрытии
+            });
+        });
+    </script>
+
+
+
+    <!-- JSON-LD: структурированные данные для SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Публичные уроки LinguaGlow",
+        "description": "{{ page_meta_description|escapejs }}",
+        "itemListElement": [
+            {% for l in lessons %}
+            {
+                "@type": "CreativeWork",
+                "name": "{{ l.name|escapejs }}",
+                "url": "{% url 'lesson_page' l.id %}",
+                "about": "{{ l.meta_description|default:''|escapejs }}",
+                "educationalLevel": "{{ l.level|escapejs }}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]
+    }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Фронтенд-фильтрация: поиск по теме/названию/ключевым словам и фильтр по уровню.
+        (function () {
+            const alertNoLessons = document.getElementById('alert-no-lessons');
+            const topicInput = document.getElementById('topicSearch');
+            const levelSelect = document.getElementById('levelFilter');
+            const clearBtn = document.getElementById('clearFilters');
+            const showAllBtn = document.getElementById('showAll');
+            const resultsCount = document.getElementById('resultsCount');
+            const tiles = Array.from(document.querySelectorAll('.lesson-tile'));
+
+            function normalize(s) {
+                return String(s || '').toLowerCase();
+            }
+
+            function matchesTile(tile, topicQuery, levelQuery) {
+                const name = normalize(tile.dataset.name);
+                const meta = normalize(tile.dataset.meta);
+                const keywords = normalize(tile.dataset.keywords);
+                const level = normalize(tile.dataset.level);
+
+                const topicMatch = !topicQuery ||
+                    name.includes(topicQuery) ||
+                    meta.includes(topicQuery) ||
+                    keywords.includes(topicQuery);
+
+                const levelMatch = !levelQuery || level === levelQuery;
+
+                return topicMatch && levelMatch;
+            }
+
+            function applyFilters() {
+                const topicQuery = normalize(topicInput.value.trim());
+                const levelQuery = normalize(levelSelect.value);
+
+                let visible = 0;
+                tiles.forEach(tile => {
+                    if (matchesTile(tile, topicQuery, levelQuery)) {
+                        tile.style.display = 'block';
+                        visible++;
+                    } else {
+                        tile.style.display = 'none';
+                    }
+                });
+
+                resultsCount.textContent = visible;
+
+                // показываем / скрываем alert
+                if (alertNoLessons) {
+                    if (visible === 0) {
+                        alertNoLessons.style.display = '';
+                    } else {
+                        alertNoLessons.style.display = 'none';
+                    }
+                }
+            }
+
+            // debounce
+            function debounce(fn, ms) {
+                let t;
+                return function () {
+                    clearTimeout(t);
+                    t = setTimeout(() => fn.apply(this, arguments), ms);
+                };
+            }
+
+            const debouncedApply = debounce(applyFilters, 180);
+
+            topicInput.addEventListener('input', debouncedApply);
+            levelSelect.addEventListener('change', applyFilters);
+
+            clearBtn.addEventListener('click', function () {
+                topicInput.value = '';
+                levelSelect.value = '';
+                applyFilters();
+            });
+
+            showAllBtn.addEventListener('click', function () {
+                topicInput.value = '';
+                levelSelect.value = '';
+                tiles.forEach(t => t.style.display = '');
+                resultsCount.textContent = tiles.length;
+                if (alertNoLessons) {
+                    alertNoLessons.style.display = 'none';
+                }
+            });
+
+            // initial count (in case JS runs after template rendered)
+            resultsCount.textContent = tiles.length;
+            if (alertNoLessons) {
+                alertNoLessons.style.display = 'none';
+            }
+        })();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('lg-newsletter-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const form = this;
+                const successMessage = document.getElementById('success-message');
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams(new FormData(form))
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Скрываем форму
+                        form.style.display = 'none';
+                        // Показываем сообщение об успехе
+                        successMessage.style.display = 'block';
+                    } else {
+                        alert('Ошибка: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    alert('Произошла ошибка при отправке формы');
+                });
+            });
+        });
+
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+
+    <!-- Модальное окно (LinguaGlow — кнопки отдельно) -->
+    <div class="modal fade" id="projectModal" tabindex="-1" aria-labelledby="projectModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content shadow-lg rounded-3 border-0">
+                <div class="modal-header bg-primary text-white rounded-top p-3">
+                    <h5 class="modal-title d-flex align-items-center gap-2" id="projectModalLabel">
+                        <span class="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-25 rounded p-2">
+                            <i class="bi bi-journal-bookmark-fill fs-5"></i>
+                        </span>
+                        <span class="fs-5">О платформе</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <p class="mb-4">
+                        <strong class="me-1">LinguaGlow</strong>
+                        <span class="text-muted">— современный способ преподавать английский ✨</span>
+                    </p>
+
+                    <ul class="list-unstyled mb-3">
+                        <li class="mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-file-earmark-text-fill text-primary fs-4 me-3"></i>
+                                <span>Скачивайте готовые PDF-уроки</span>
+                            </div>
+                        </li>
+
+                        <li class="mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-lightning-charge-fill text-warning fs-4 me-3"></i>
+                                <span>Создавайте интерактивные задания в пару кликов</span>
+                            </div>
+                            <a href="https://linguaglow.ru/" class="btn btn-outline-primary btn-sm" target="_blank">Попробовать</a>
+                        </li>
+
+                        <li>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-people-fill text-success fs-4 me-3"></i>
+                                <span>Приглашайте учеников в виртуальный класс</span>
+                            </div>
+                            <a href="{% url 'invitation_guide' %}" class="btn btn-outline-primary btn-sm" target="_blank">Подробнее</a>
+                        </li>
+                    </ul>
+                </div>
+
+                {% if not is_authenticated %}
+                <div class="modal-footer border-0 p-3">
+                    <a href="https://linguaglow.ru/" class="btn btn-primary" target="_blank" rel="noopener">
+                        Начать бесплатно
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Стили -->
+    <style>
+        #projectModal .modal-content { overflow: hidden; }
+        #projectModal .btn-outline-primary,
+        #projectModal .btn-primary {
+            border-radius: 10px;
+        }
+        #projectModal .btn-sm {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    </style>
+
+    <!-- Модальное окно (Контакты) -->
+    <div class="modal fade" id="contactsModal" tabindex="-1" aria-labelledby="contactsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content shadow-lg rounded-3 border-0">
+                <div class="modal-header bg-primary text-white rounded-top p-3">
+                    <h5 class="modal-title d-flex align-items-center gap-2" id="contactsModalLabel">
+                        <i class="bi bi-envelope-fill"></i>
+                        <span>Контакты</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <p class="mb-3">
+                        Свяжитесь с нами по email:
+                    </p>
+                    <p class="fw-bold text-primary mb-4">
+                        linguaglow0@gmail.com
+                    </p>
+
+                    <a href="mailto:linguaglow0@gmail.com" class="btn btn-primary w-100">
+                        <i class="bi bi-envelope-paper-heart me-2"></i>
+                        Написать письмо
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+</body>
+</html>

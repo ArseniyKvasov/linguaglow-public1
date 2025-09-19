@@ -1,0 +1,68 @@
+{% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+{% else %}
+<div class="bg-white mb-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <form method="get" class="mb-4">
+                <div class="row">
+                    <div class="col-md-3 col-12 mb-3">
+                        <label class="font-weight-bold">Период</label>
+                        <div class="input-group input-group-sm">
+                            <select name="error_period" class="form-control">
+                                {% for value, label in period_choices %}
+                                    <option value="{{ value }}" {% if current_period == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-auto align-self-end mb-3">
+                        <button type="submit" class="btn btn-success btn-sm w-100">
+                            <i class="fas fa-filter mr-1"></i> Применить
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="bg-success text-white">
+                        <tr>
+                            <th>Описание ошибки</th>
+                            <th>Данные устройства</th>
+                            <th>Дата</th>
+                            <th style="width: 40px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in errors %}
+                        <tr>
+                            <td><span class="badge bg-light text-dark">{{ log.function_name }}</span></td>
+                            <td class="text-muted small" title="{{ log.error_message }}">{{ log.error_message|truncatechars:100 }}</td>
+                            <td><span class="badge text-dark">{{ log.created_at|date:"d.m.Y H:i" }}</span></td>
+                            <td class="text-center">
+                                <form method="post" action="{% url 'delete_site_error' log.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-close btn-sm" aria-label="Удалить" title="Удалить"></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <i class="fas fa-info-circle mr-1"></i> Нет ошибок за выбранный период
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endif %}

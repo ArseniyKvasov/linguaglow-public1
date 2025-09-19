@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Language" content="ru">
+        <meta name="robots" content="index, follow">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>LinguaGlow для учителя</title>
+        <meta name="description" content="План урока и рабочие листы за 2 клика: создавайте готовые интерактивные уроки по английскому — импорт PDF/Word, ИИ-генерация и виртуальный класс. Бесплатно.">
+        <meta name="keywords" content="интерактивная платформа, готовые уроки, план урока, рабочий лист, Present Simple, Past Simple, английский язык, курс, для школьников, школьникам, искуственный интеллект, быстро, план занятия, план, репетитор, учитель, преподаватель">
+        <meta name="author" content="LinguaGlow">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+        {% load custom_tags %}
+        {% load static %}
+        <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+        <style>
+            :root { --lg-blue: #0d6efd; --lg-green: #20c997; --muted: #6c757d; }
+            body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; background:#fff; color:#212529; }
+            .hero { padding:3.5rem 0; }
+            @media (max-width: 575.98px) {
+              .hero h1 {
+                font-size: calc(0.7rem + 3.3vw); /* Более плавное и контролируемое уменьшение */
+                /* Или просто задайте фиксированный размер, например: */
+                /* font-size: 2rem; */
+              }
+              .hero .lead {
+                font-size: 1rem; /* Уменьшаем размер подзаголовка */
+              }
+              .hero {
+                padding: 2.5rem 0; /* Можно также немного уменьшить отступы сверху и снизу */
+              }
+            }
+            .feature-icon { font-size:1.4rem; width:44px; height:44px; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; background:rgba(13,110,253,0.06); color:var(--lg-blue); }
+            .badge-popular{ background:linear-gradient(90deg,#0d6efd,#20c997); color:#fff; font-weight:600; padding:0.3rem 0.55rem; border-radius:999px; font-size:0.78rem; }
+            .token-card{ border-left:4px solid var(--lg-blue); }
+            .sticky-cta{ position:fixed; right:1rem; bottom:1rem; z-index:1030; }
+            .small-muted{ color:var(--muted); font-size:0.9rem; }
+            .testimonial{ background:#fbfbff; border-radius:10px; padding:0.9rem; }
+            #cta-text {
+                font-size: 1.15rem;
+                line-height: 1.5;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 0.5rem; /* расстояние между текстом и таймером */
+                flex-wrap: wrap; /* чтобы на узких экранах таймер переносился вниз */
+            }
+
+            #cta-text .fw-bold {
+                font-size: 1.25rem;
+            }
+
+            .badge {
+                font-size: 1rem;
+                padding: 0.35em 0.65em;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Yandex.Metrika counter -->
+        <script type="text/javascript">
+            (function(m,e,t,r,i,k,a){
+                m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+                m[i].l=1*new Date();
+                for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+                k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+            })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=103833195', 'ym');
+
+            ym(103833195, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+        </script>
+        <noscript><div><img src="https://mc.yandex.ru/watch/103833195" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+        <!-- /Yandex.Metrika counter -->
+
+        <main class="container">
+            <!-- HERO (без картинки, фокус на фичи) -->
+            <header class="hero row align-items-center py-5" style="min-height: 100vh;">
+                <div class="col-lg-9 mx-auto text-center">
+                    <h1 class="display-6 fw-bold">Устали тратить время на подготовку? LinguaGlow создает уроки за 2 клика</h1>
+                    <p class="lead text-muted mt-3">Интерактивные уроки, PDF и интерактивизация учебников — быстро и без лишней рутины.</p>
+
+                    <div class="mt-4 d-flex justify-content-center gap-3">
+                        <a href="{% url 'register' %}" class="register-link btn btn-lg btn-primary">
+                            <i class="bi bi-lightning-charge-fill me-2"></i>Создать урок бесплатно
+                        </a>
+                    </div>
+
+                    <!-- Карусель фич -->
+                    <div id="featuresCarousel" class="carousel slide mt-5" data-bs-ride="carousel" data-bs-interval="3800" aria-label="Фичи LinguaGlow">
+                        <div class="carousel-inner text-start">
+                            <div class="carousel-item active">
+                                <div class="d-flex align-items-start gap-3 justify-content-center">
+                                    <div class="feature-icon"><i class="bi bi-clock-history"></i></div>
+                                    <div>
+                                        <div class="fw-bold">Мгновенные уроки</div>
+                                        <div class="small-muted">Урок полностью готов за 2 клика.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="d-flex align-items-start gap-3 justify-content-center">
+                                    <div class="feature-icon" style="background:rgba(32,201,151,0.06); color:var(--lg-green);"><i class="bi bi-journal-richtext"></i></div>
+                                    <div>
+                                        <div class="fw-bold">Импорт учебников</div>
+                                        <div class="small-muted">PDF → интерактив в один клик.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="d-flex align-items-start gap-3 justify-content-center">
+                                    <div class="feature-icon"><i class="bi bi-controller"></i></div>
+                                    <div>
+                                        <div class="fw-bold">Геймификация</div>
+                                        <div class="small-muted">Игровые элементы для удержания.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="d-flex align-items-start gap-3 justify-content-center">
+                                    <div class="feature-icon"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+                                    <div>
+                                        <div class="fw-bold">PDF-экспорт</div>
+                                        <div class="small-muted">Скачивайте готовые материалы для офлайн-занятий.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Контролы -->
+                        <div class="d-flex justify-content-center mt-3 gap-2">
+                            <button class="btn btn-sm border-0" type="button" data-bs-target="#featuresCarousel" data-bs-slide="prev">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <button class="btn btn-sm border-0" type="button" data-bs-target="#featuresCarousel" data-bs-slide="next">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ALL FEATURES (минималистичная, мобильная: 6 видимых + раскрытие, улучшено) -->
+            <section id="all-features" class="py-5" aria-labelledby="all-features-title">
+                <div class="container">
+                    <div class="text-center mb-4">
+                        <h3 id="all-features-title" class="h5 fw-bold">15+ интерактивных шаблонов и инструментов</h3>
+                        <p class="small-muted mx-auto" style="max-width:720px;">
+                            Всё, чтобы создавать живые уроки: от мини-игр до полноценных эссе и проверки знаний.
+                        </p>
+                    </div>
+
+                    <div class="feature-grid row gy-3 justify-content-center" role="list">
+                        <!-- 6 карточек, которые показываются по умолчанию на телефонах -->
+                        <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex">
+                            <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="WordWall">
+                                <div class="feature-icon mb-2"><i class="bi bi-grid-3x3-gap-fill" aria-hidden="true"></i></div>
+                                <div class="fw-semibold">WordWall</div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex">
+                            <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Quizlet">
+                                <div class="feature-icon mb-2"><i class="bi bi-question-circle" aria-hidden="true"></i></div>
+                                <div class="fw-semibold">Quizlet</div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex">
+                            <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Список слов">
+                                <div class="feature-icon mb-2"><i class="bi bi-list-ul" aria-hidden="true"></i></div>
+                                <div class="fw-semibold">Список слов</div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex">
+                            <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Виртуальная доска">
+                                <div class="feature-icon mb-2"><i class="bi bi-laptop" aria-hidden="true"></i></div>
+                                <div class="fw-semibold">Виртуальная доска</div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex">
+                            <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Тест">
+                                <div class="feature-icon mb-2"><i class="bi bi-card-checklist" aria-hidden="true"></i></div>
+                                <div class="fw-semibold">Тест</div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex">
+                            <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="PDF">
+                                <div class="feature-icon mb-2"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i></div>
+                                <div class="fw-semibold">PDF</div>
+                            </div>
+                        </div>
+
+                        <!-- Невидимые на мобилке — помещены в контейнер extra-features -->
+                        <div class="extra-features-wrapper w-100">
+                            <div class="row gy-3 justify-content-center">
+                                <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex feature-hidden">
+                                    <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Собрать слово">
+                                        <div class="feature-icon mb-2"><i class="bi bi-puzzle" aria-hidden="true"></i></div>
+                                        <div class="fw-semibold">Собрать слово</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex feature-hidden">
+                                    <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Заполнить пропуски">
+                                        <div class="feature-icon mb-2"><i class="bi bi-type" aria-hidden="true"></i></div>
+                                        <div class="fw-semibold">Заполнить пропуски</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex feature-hidden">
+                                    <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Составить предложение">
+                                        <div class="feature-icon mb-2"><i class="bi bi-chat-left-text" aria-hidden="true"></i></div>
+                                        <div class="fw-semibold">Составить предложение</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex feature-hidden">
+                                    <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Соотнести карточки">
+                                        <div class="feature-icon mb-2"><i class="bi bi-columns-gap" aria-hidden="true"></i></div>
+                                        <div class="fw-semibold">Соотнести карточки</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex feature-hidden">
+                                    <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Распределить по колонкам">
+                                        <div class="feature-icon mb-2"><i class="bi bi-layout-three-columns" aria-hidden="true"></i></div>
+                                        <div class="fw-semibold">Распределить по колонкам</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex feature-hidden">
+                                    <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Правда или ложь">
+                                        <div class="feature-icon mb-2"><i class="bi bi-check-circle" aria-hidden="true"></i></div>
+                                        <div class="fw-semibold">Правда / Ложь</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex feature-hidden">
+                                    <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Эссе">
+                                        <div class="feature-icon mb-2"><i class="bi bi-file-text" aria-hidden="true"></i></div>
+                                        <div class="fw-semibold">Эссе</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex feature-hidden">
+                                    <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Аудио">
+                                        <div class="feature-icon mb-2"><i class="bi bi-volume-up" aria-hidden="true"></i></div>
+                                        <div class="fw-semibold">Аудио</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex feature-hidden">
+                                    <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Подписать картинку">
+                                        <div class="feature-icon mb-2"><i class="bi bi-image" aria-hidden="true"></i></div>
+                                        <div class="fw-semibold">Подписать картинку</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex feature-hidden">
+                                    <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Статья">
+                                        <div class="feature-icon mb-2"><i class="bi bi-newspaper" aria-hidden="true"></i></div>
+                                        <div class="fw-semibold">Статья</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-sm-4 col-md-4 col-lg-2 d-flex feature-hidden">
+                                    <div class="feature-card p-3 w-100 text-center" role="listitem" aria-label="Заметка">
+                                        <div class="feature-icon mb-2"><i class="bi bi-stickies" aria-hidden="true"></i></div>
+                                        <div class="fw-semibold">Заметка</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <button id="show-more-features" class="btn show-more-btn p-2 px-3 border-0 fw-bold d-inline-flex align-items-center"
+                                type="button" aria-expanded="false" aria-controls="extra-features-area">
+                            <span id="show-more-text">Показать ещё</span>
+                            <i id="show-more-ico" class="bi bi-chevron-down ms-2" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <style>
+                    /* Минималистичная стилизация (под стиль HERO) */
+                    #all-features .feature-card {
+                        background: var(--bs-white);
+                        border-radius: 12px;
+                        border: 1px solid rgba(15,23,42,0.04);
+                        transition: transform .12s ease, box-shadow .12s ease;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        min-height: 96px;
+                        padding: 12px;
+                    }
+
+                    #all-features .feature-card:hover {
+                        transform: translateY(-6px);
+                        box-shadow: 0 8px 24px rgba(2,6,23,0.06);
+                    }
+
+                    /* Под стиль HERO: feature-icon */
+                    #all-features .feature-icon {
+                        width: 48px;
+                        height: 48px;
+                        border-radius: 10px;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        background: rgba(13,110,253,0.06);
+                        color: var(--bs-primary);
+                        font-size: 20px;
+                    }
+
+                    #all-features .feature-card .fw-semibold {
+                        margin-top: 8px;
+                        font-size: 13px;
+                        color: #1f2937;
+                    }
+
+                    /* Обёртка для "скрытых" карточек — даёт плавное раскрытие */
+                    .extra-features-wrapper {
+                        overflow: hidden;
+                        transition: max-height .28s ease;
+                    }
+
+                    /* По умолчанию на мобильных — скрываем дополнительно видимые карточки */
+                    @media (max-width: 576px) {
+                        /* Скрываем карточки, помеченные feature-hidden в визуальном потоке */
+                        #all-features .feature-hidden { display: block; } /* остаются в DOM, но обёртка управляет видимостью */
+                        .extra-features-wrapper { max-height: 0; }
+
+                        /* Кнопка видна только на мобильных — делаем крупнее область нажатия */
+                        .show-more-btn {
+                            display: inline-flex;
+                            align-items: center;
+                            gap: .5rem;
+                            padding: .5rem .75rem;
+                            min-height: 44px;
+                            border-radius: 10px;
+                            background: rgba(13,110,253,0.04);
+                            color: var(--bs-primary);
+                        }
+                    }
+
+                    @media (min-width: 577px) {
+                        /* На больших экранах все карточки видны, кнопка скрыта через CSS */
+                        #all-features .feature-hidden { display: block; }
+                        .show-more-btn { display: none !important; }
+                        .extra-features-wrapper { max-height: none; overflow: visible; }
+                    }
+                </style>
+
+                <script>
+                    (function(){
+                        var section = document.getElementById('all-features');
+                        var btn = document.getElementById('show-more-features');
+                        var text = document.getElementById('show-more-text');
+                        var ico = document.getElementById('show-more-ico');
+                        var wrapper = document.querySelector('#all-features .extra-features-wrapper');
+                        if (!section || !btn || !wrapper) return;
+
+                        // Защита от двойных срабатываний (pointer + click)
+                        var lastToggleAt = 0;
+                        var throttleMs = 450;
+
+                        function isMobile() {
+                            return window.matchMedia('(max-width:576px)').matches;
+                        }
+
+                        // Функция для получения реальной высоты контента внутри обёртки
+                        function getContentHeight() {
+                            // временно "открываем", чтобы измерить, затем возвращаем
+                            var prevMax = wrapper.style.maxHeight;
+                            wrapper.style.maxHeight = 'none';
+                            var h = wrapper.scrollHeight;
+                            wrapper.style.maxHeight = prevMax;
+                            return h;
+                        }
+
+                        // Инициализация состояния при загрузке / ресайзе
+                        function initState(){
+                            if (isMobile()) {
+                                // на мобилке по умолчанию свернуто
+                                wrapper.style.maxHeight = '0px';
+                                text.textContent = 'Показать ещё';
+                                ico.classList.remove('bi-chevron-up'); ico.classList.add('bi-chevron-down');
+                                btn.setAttribute('aria-expanded', 'false');
+                            } else {
+                                // на больших экранах — всё видно
+                                wrapper.style.maxHeight = 'none';
+                                text.textContent = 'Показать ещё';
+                                btn.setAttribute('aria-expanded', 'true');
+                            }
+                        }
+
+                        function toggle(e){
+                            var now = Date.now();
+                            if (now - lastToggleAt < throttleMs) {
+                                // игнорируем повторные события
+                                e && e.preventDefault && e.preventDefault();
+                                return;
+                            }
+                            lastToggleAt = now;
+
+                            if (!isMobile()) return; // на десктопе не дергаем (CSS скрывает кнопку)
+
+                            var isExpanded = btn.getAttribute('aria-expanded') === 'true';
+                            if (isExpanded) {
+                                // свернуть
+                                wrapper.style.maxHeight = wrapper.scrollHeight + 'px'; // чтобы анимация отработала корректно
+                                // вызов в следующем тикe, чтобы браузер применил текущее состояние и проиграл transition
+                                requestAnimationFrame(function(){
+                                    wrapper.style.maxHeight = '0px';
+                                });
+                                text.textContent = 'Показать ещё';
+                                ico.classList.remove('bi-chevron-up'); ico.classList.add('bi-chevron-down');
+                                btn.setAttribute('aria-expanded', 'false');
+                            } else {
+                                // раскрыть — ставим до измерения, чтобы корректно анимировалось
+                                var targetH = getContentHeight();
+                                wrapper.style.maxHeight = '0px';
+                                // даём браузеру применить max-height:0, затем расширяем
+                                requestAnimationFrame(function(){
+                                    wrapper.style.maxHeight = targetH + 'px';
+                                });
+                                text.textContent = 'Свернуть';
+                                ico.classList.remove('bi-chevron-down'); ico.classList.add('bi-chevron-up');
+                                btn.setAttribute('aria-expanded', 'true');
+                            }
+                        }
+
+                        // Используем pointerup — покрывает и touch, и мышь; оставляем click как запасной
+                        btn.addEventListener('pointerup', function(ev){
+                            // допускаем только primary pointer (обычно палец/левая кнопка)
+                            if (ev.pointerType && ev.pointerType === 'mouse' && ev.button !== 0) return;
+                            toggle(ev);
+                        }, {passive: true});
+
+                        btn.addEventListener('click', function(ev){
+                            // click как запасной (вдруг pointer не поддерживается)
+                            toggle(ev);
+                        });
+
+                        // реагируем на изменение размера экрана
+                        var resizeTimeout;
+                        window.addEventListener('resize', function(){
+                            clearTimeout(resizeTimeout);
+                            resizeTimeout = setTimeout(function(){
+                                initState();
+                            }, 120);
+                        });
+
+                        // первичная инициализация
+                        initState();
+                    })();
+                </script>
+            </section>
+
+            <!-- WHY (компактно) -->
+            <section id="why" class="py-4">
+                <div class="row g-4">
+                    <div class="col-lg-7">
+                        <h3 class="h5 fw-bold">Почему преподаватели выбирают LinguaGlow</h3>
+                        <ul class="list-unstyled mt-5">
+                            <li class="mb-2 d-flex">
+                                <div class="me-3 text-primary fs-4"><i class="bi bi-people-fill"></i></div>
+                                <div><div class="fw-bold">Больше заявок</div><div class="small-muted">Современный интерактивный формат делает вас заметнее.</div></div>
+                            </li>
+                            <li class="mb-2 d-flex">
+                                <div class="me-3 text-success fs-4"><i class="bi bi-journal-check"></i></div>
+                                <div><div class="fw-bold">Создавайте уникальные модули</div><div class="small-muted">Соберите свой интерактивный курс для ЕГЭ, IELTS, TOEFL — за минуты.</div></div>
+                            </li>
+                            <li class="mb-2 d-flex">
+                                <div class="me-3 text-warning fs-4"><i class="bi bi-chat-left-text-fill"></i></div>
+                                <div><div class="fw-bold">Удержание</div><div class="small-muted">Виртуальный класс повышает лояльность учеников и удерживает их дольше.</div></div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="card p-3 h-100 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="badge-popular">Популярно</div>
+                                    <h5 class="mt-3 mb-1">Быстрый факт</h5>
+                                    <p class="small-muted mb-0">Бета-пользователи: уроки готовятся в 5 раз быстрее.</p>
+                                </div>
+                                <div class="text-end small-muted">Для преподавателей английского</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TARIFS -->
+            <section id="tariffs" class="py-4">
+                <div class="mt-3">
+                    {% render_pricing_section %}
+                </div>
+            </section>
+
+            <!-- HOW IT WORKS (компактно) -->
+            <section id="how" class="py-5">
+                <h3 class="h6 fw-bold">Как это работает</h3>
+                <div class="row g-3 mt-2">
+                    <div class="col-4 text-center">
+                        <div class="fs-3 text-primary"><i class="bi bi-upload"></i></div>
+                        <div class="mt-2 fw-bold">Загрузить</div>
+                        <div class="small-muted">PDF или шаблон</div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="fs-3 text-success"><i class="bi bi-robot"></i></div>
+                        <div class="mt-2 fw-bold">Создать</div>
+                        <div class="small-muted">2 клика — урок готов</div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="fs-3 text-warning"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+                        <div class="mt-2 fw-bold">Начать</div>
+                        <div class="small-muted">Класс или PDF — ваш выбор</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TESTIMONIALS (улучшенные отзывы) -->
+            <section id="testimonials" class="py-5">
+                <h3 class="h6 fw-bold">Отзывы наших преподавателей</h3>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-4">
+                        <div class="testimonial card p-3 h-100 shadow-sm">
+                            <div class="fw-bold">Елена Сергеевна, репетитор</div>
+                            <div class="small-muted mb-1">Английский для школьников Москвы</div>
+                            <div>"Теперь подготовка уроков стала проще! За считанные секунды у меня готовый материал для занятий."</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="testimonial card p-3 h-100 shadow-sm">
+                            <div class="fw-bold">Дмитрий Иванович, преподаватель</div>
+                            <div class="small-muted mb-1">Курсы подготовки к экзаменам IELTS</div>
+                            <div>"Интерактивные упражнения помогают моим ученикам лучше усваивать материал и повышают их успеваемость."</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="testimonial card p-3 h-100 shadow-sm">
+                            <div class="fw-bold">Светлана Викторовна, учитель</div>
+                            <div class="small-muted mb-1">Методист школьного курса</div>
+                            <div>"LinguaGlow стал незаменимым помощником в подготовке моих уроков, теперь я трачу меньше времени на создание заданий."</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA BANNER -->
+            <section id="create" class="py-5 text-center bg-white border rounded shadow-sm">
+                <h3 class="h5 fw-bold">Готовы попробовать?</h3>
+                <p id="cta-text" class="small-muted mx-2">
+                    <span id="cta-message">
+                        <span class="fw-bold text-success">Подарок при регистрации сейчас!</span>
+                    </span>
+                    <span id="fomo-badge" class="badge bg-danger">05:00</span>
+                </p>
+                <a href="{% url 'register' %}" class="register-link btn btn-lg btn-primary mt-2">Создать урок бесплатно</a>
+            </section>
+
+            <!-- FAQ (ключевое) -->
+            <section id="faq" class="py-5">
+                <h3 class="h6 fw-bold">Вопросы</h3>
+                <div class="accordion mt-2" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="q1">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="false" aria-controls="collapse1">
+                                Что такое токены и как они расходуются?
+                            </button>
+                        </h2>
+                        <div id="collapse1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body small-muted">
+                                Токены — внутренняя валюта для генерации уроков и интерактивизации учебника. Пример: генерация 60-минутного урока занимает примерно 40–80 токенов.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="q2">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                                Как реально экономить время на подготовку?
+                            </button>
+                        </h2>
+                        <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body small-muted">
+                                Моментальная генерация уникальных заданий: ИИ сам создаст лучший интерактивный урок в пару кликов, а вы сохраните время на важное.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="q3">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                                Как сделать учебник интерактивным?
+                            </button>
+                        </h2>
+                        <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body small-muted">
+                                Загрузите PDF — ИИ сам преобразует его в интерактивный формат.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="bg-light text-center py-3">
+    <div class="container">
+        <small>
+            © 2025 LinguaGlow |
+            <a href="{% url 'documents' %}" class="text-muted text-decoration-none">Правовые документы</a>
+        </small>
+        <div class="mt-2">
+            <p class="mb-1">
+                <strong>ИП Квасов Арсений Олегович</strong>
+            </p>
+            <p class="mb-0">
+                ИНН: 760907002896
+            </p>
+        </div>
+    </div>
+</footer>
+
+        <!-- Sticky CTA -->
+        <div class="sticky-cta d-none d-md-block">
+            <a href="{% url 'register' %}" class="register-link btn btn-lg btn-primary shadow"><i class="bi bi-lightning-charge-fill me-2"></i>Создать урок</a>
+        </div>
+
+        <div id="cookie-banner" class="position-fixed bottom-0 start-0 mb-4 ms-4 m-2 px-4 py-2 bg-white rounded-pill shadow d-none" style="z-index: 1080;">
+            <div class="d-flex align-items-center gap-3">
+                <span class="small text-dark mb-0 d-none d-sm-inline">
+                    Мы используем cookie для аналитики и улучшения работы сайта.
+                </span>
+                <span class="small text-dark mb-0 d-inline d-sm-none">
+                    Мы используем cookie.
+                </span>
+                <button id="cookie-accept" class="btn btn-success btn-sm rounded-pill px-3">Ок</button>
+            </div>
+        </div>
+
+        <script>
+            function setCookie(name, value, days) {
+                let expires = "";
+                if (days) {
+                    let date = new Date();
+                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "") + expires + "; path=/";
+            }
+
+            function getCookie(name) {
+                let nameEQ = name + "=";
+                let ca = document.cookie.split(';');
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i].trim();
+                    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length);
+                }
+                return null;
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                let banner = document.getElementById("cookie-banner");
+                let acceptBtn = document.getElementById("cookie-accept");
+
+                if (!getCookie("cookie_consent")) {
+                    banner.classList.remove("d-none");
+                    banner.style.opacity = 0;
+                    banner.style.transition = "opacity 0.5s";
+                    requestAnimationFrame(() => banner.style.opacity = 1);
+                }
+
+                acceptBtn.addEventListener("click", function () {
+                    banner.style.opacity = 0;
+                    setCookie("cookie_consent", "1", 365);
+                    setTimeout(() => banner.remove(), 500);
+                });
+            });
+        </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var featureCarousel = document.querySelector('#featuresCarousel');
+                if (featureCarousel) {
+                    // инициализация с pause on hover и автопереключением
+                    new bootstrap.Carousel(featureCarousel, {
+                        interval: 3800,
+                        ride: 'carousel',
+                        pause: 'hover',
+                        touch: true
+                    });
+                }
+
+                // уменьшение padding у хедера для крошечных экранов (опционально)
+                if (window.matchMedia('(max-width: 380px)').matches) {
+                    var hero = document.querySelector('.hero');
+                    if (hero) hero.style.padding = '1rem 0';
+                }
+            });
+        </script>
+        <script>
+            const OFFER_COOKIE = 'double_tokens_offer';
+            const OFFER_LAST_COOKIE = 'double_tokens_offer_last'; // время последнего запуска
+            const OFFER_DURATION = 5 * 60; // 5 минут
+            const OFFER_COOLDOWN = 7 * 24 * 60 * 60; // 7 дней
+
+            function setCookie(name, value, seconds) {
+                const d = new Date();
+                d.setTime(d.getTime() + (seconds * 1000));
+                document.cookie = `${name}=${value};expires=${d.toUTCString()};path=/`;
+            }
+
+            function getCookie(name) {
+                const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+                return match ? match[2] : null;
+            }
+
+            const ctaMessage = document.getElementById('cta-message');
+            const fomoBadge = document.getElementById('fomo-badge');
+            const defaultText = 'Создайте первый урок — регистрируйтесь сейчас и получите токены ИИ в подарок.';
+
+            function startOfferCountdown(endTimestamp) {
+                fomoBadge.style.display = 'inline-block';
+
+                function updateTimer() {
+                    const now = Math.floor(Date.now() / 1000);
+                    const remaining = endTimestamp - now;
+
+                    if (remaining <= 0) {
+                        clearInterval(interval);
+                        ctaMessage.textContent = defaultText;
+                        fomoBadge.style.display = 'none';
+                        return;
+                    }
+
+                    const minutes = Math.floor(remaining / 60);
+                    const seconds = remaining % 60;
+
+                    ctaMessage.innerHTML = `<span class="fw-bold text-success">Подарок при регистрации сейчас!</span>`;
+                    fomoBadge.textContent = `${minutes}:${seconds.toString().padStart(2,'0')}`;
+                }
+
+                updateTimer();
+                const interval = setInterval(updateTimer, 1000);
+            }
+
+            let offerEnd = getCookie(OFFER_COOKIE);
+            let lastOffer = getCookie(OFFER_LAST_COOKIE);
+            const now = Math.floor(Date.now() / 1000);
+
+            if (!lastOffer || (now - lastOffer) >= OFFER_COOLDOWN) {
+                // можем показывать новый оффер
+                if (!offerEnd) {
+                    const endTime = now + OFFER_DURATION;
+                    setCookie(OFFER_COOKIE, endTime, OFFER_DURATION);
+                    setCookie(OFFER_LAST_COOKIE, now, OFFER_COOLDOWN); // фиксируем дату последнего запуска
+                    offerEnd = endTime;
+                }
+            }
+
+            if (offerEnd && offerEnd > now) {
+                startOfferCountdown(offerEnd);
+            } else {
+                ctaMessage.innerHTML = defaultText;
+                fomoBadge.style.display = 'none';
+            }
+
+            // Кнопки
+            const registerLinks = document.querySelectorAll('.register-link');
+            function isOfferActive() {
+                const now = Math.floor(Date.now() / 1000);
+                return offerEnd > now;
+            }
+
+            registerLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (isOfferActive()) {
+                        e.preventDefault();
+                        const url = new URL(this.href, window.location.origin);
+                        url.searchParams.set('double_tokens', '1');
+                        window.location.href = url;
+                    }
+                });
+            });
+        </script>
+
+    </body>
+</html>

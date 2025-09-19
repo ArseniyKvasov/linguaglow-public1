@@ -1,0 +1,398 @@
+* {
+    word-break: break-word;
+}
+
+@keyframes gradientFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+
+.loading-indicator {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5em;
+    color: #333;
+}
+
+.disabled {
+    /* Основные стили */
+    background-color: #e0e0e0; /* Светло-серый фон */
+    color: #a8a8a8; /* Серый текст */
+    border: 1px solid #cccccc; /* Серая граница */
+    cursor: not-allowed; /* Изменение курсора на "запрещено" */
+    opacity: 0.6; /* Полупрозрачность для большего акцента на неактивности */
+    pointer-events: none; /* Отключение взаимодействия */
+}
+
+
+@keyframes flash-red {
+    0%   { background-color: transparent; }
+    25%  { background-color: rgba(220, 53, 69, 0.25); }
+    50%  { background-color: transparent; }
+    75%  { background-color: rgba(220, 53, 69, 0.25); }
+    100% { background-color: transparent; }
+}
+
+.flash-error {
+    animation: flash-red 1s ease-in-out;
+    background-color: rgba(220, 53, 69, 0.25);
+}
+
+.is-valid {
+    background-color: rgba(52, 199, 89, 0.25);
+}
+
+.correct-answer input[type="radio"]:checked {
+    background-color: green;
+    border-color: green;
+}
+
+.incorrect-answer input[type="radio"]:checked {
+    background-color: red;
+    border-color: red;
+}
+
+/* Список слов */
+.word-item {
+    transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.word-item:hover {
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+    cursor: pointer;
+}
+
+.bg-warning-subtle {
+    background-color: #fff3cd !important;
+}
+
+#fill-textarea, .essay-editor, #note-content, #article-content {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+@media (min-width: 992px) {
+    #secondary-container {
+        position: sticky;
+        top: 65px;
+        bottom: 20px;
+        height: calc(100vh - 150px);
+        overflow: visible;
+    }
+}
+
+
+/* Подписать картинки */
+.square-image-container {
+    width: 100%; /* Заполняет родительский контейнер */
+    position: relative;
+    overflow: hidden;
+    padding-top: 100%; /* Соотношение 1:1 делает контейнер квадратным */
+}
+
+.square-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.square-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Обрезает изображение, чтобы оно заполнило квадрат */
+    border-radius: 8px; /* Закруглённые углы, можно убрать */
+}
+
+/* Распределить слова в колонки */
+.draggable-word {
+    cursor: grab;
+    transition: transform 0.2s;
+}
+.draggable-word:active {
+    cursor: grabbing;
+    transform: scale(1.05);
+}
+.column-dropzone {
+    transition: box-shadow 0.3s;
+}
+.column-dropzone.dragover {
+    border-color: #2196F3 !important;
+    box-shadow: 0 0 0 2px #2196F3;
+}
+.word-bank {
+    transition: all 0.3s;
+}
+.drop-area {
+    min-height: 150px;
+    border: 2px dashed #6c757d;
+    border-radius: 0.375rem;
+}
+
+
+/* Определяем анимацию */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.overlay.fade-out {
+    position: absolute;
+    opacity: 1;
+
+    -webkit-transition: opacity 0.5s ease-in-out;
+    -moz-transition: opacity 0.5s ease-in-out;
+    transition: opacity 0.5s ease-in-out;
+}
+
+/* Применяем анимацию к элементу .overlay */
+.overlay {
+  opacity: 1; /* Начальная прозрачность */
+  transition: opacity 1s ease-in-out; /* Плавное изменение прозрачности */
+}
+
+
+
+/* Сортировка по колонкам */
+.sticky-word-bank {
+    position: sticky;
+    top: 55px; /* Отступ сверху, учитывающий ваш header */
+    background: white;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #dee2e6;
+    z-index: 3; /* Достаточно высокий, чтобы быть поверх контента, но не перекрывать модальные окна */
+    margin-top: -1px; /* Компенсирует border-bottom */
+}
+
+/* Для мобильных устройств можно уменьшить отступ */
+@media (max-width: 768px) {
+    .sticky-word-bank {
+        top: 50px;
+    }
+}
+
+.card-glowing {
+    position: relative !important;
+    border-radius: 8px;
+    overflow: visible !important; /* Важно! */
+    box-sizing: border-box;
+}
+
+.card-glowing::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    animation: redPulse 1s ease-in-out;
+    pointer-events: none;
+    box-sizing: border-box;
+    opacity: 0;
+}
+
+@keyframes redPulse {
+    0% {
+        border-color: transparent;
+        opacity: 0;
+    }
+    50% {
+        border-color: rgba(255, 0, 0, 0.8);
+        opacity: 1;
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+    }
+    100% {
+        border-color: transparent;
+        opacity: 0;
+    }
+}
+
+
+.call-controls .btn {
+    border-radius: 1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 1rem;
+    font-size: 1.2rem;
+}
+
+
+
+/* Reset и базовые стили */
+
+body {
+    margin: 0;
+    font-size: 14px;
+    color: #222;
+    background: #f9f9f9;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* Основной контейнер */
+#task-list {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.nav-link {
+    background-color: white !important; /* Белый фон для всех кнопок */
+    color: #333 !important; /* Цвет текста для лучшей читаемости */
+}
+
+.nav-link.active {
+    background-color: #0d6efd !important; /* Светло-серый фон для активной кнопки */
+    color: white !important; /* Синий цвет текста для активной кнопки (как в Bootstrap по умолчанию) */
+
+}
+
+.video-fullscreen {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 80vw !important;
+    height: 80vh !important;
+    z-index: 9999 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid #ddd !important;
+    background: white !important;
+}
+
+.btn-close-fullscreen {
+    position: fixed !important;
+    top: 10px !important;
+    right: 10px !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 10001 !important;
+    opacity: 0.8 !important;
+    transition: opacity 0.2s !important;
+    border: none !important;
+}
+
+.btn-close-fullscreen:hover {
+    opacity: 1 !important;
+}
+
+.video-fullscreen + .call-controls {
+    position: fixed !important;
+    bottom: 5vh !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 10000 !important;
+}
+
+/* Скрыть scrollbars во всех браузерах */
+body, html {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE и Edge */
+}
+
+body::-webkit-scrollbar,
+html::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.modal-body {
+    overflow-y: auto;               /* Оставляем прокрутку */
+    scrollbar-width: none;          /* Firefox */
+    -ms-overflow-style: none;       /* IE и Edge */
+}
+
+.modal-body::-webkit-scrollbar {
+    display: none;                  /* Chrome, Safari, Opera */
+}
+
+.video-wrapper {
+    position: relative;
+    aspect-ratio: 16/9; /* Сохраняем пропорции видео */
+}
+
+.controls-container {
+    border-top: 1px solid #eee;
+}
+
+.call-btn {
+    background: none;
+    border: none;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.call-btn:hover {
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+
+.call-btn i {
+    font-size: 16px;
+}
+
+#section-list {
+    scrollbar-width: none !important; /* Для Firefox */
+    -ms-overflow-style: none !important; /* Для IE/Edge */
+}
+
+#section-list::-webkit-scrollbar {
+    display: none !important; /* Для Chrome/Safari */
+}
+
+/* Видеозвонок */
+/* Основные стили для контейнера видео */
+#fixed-video-container {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    width: 260px;
+    height: 170px;
+    background: transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 1040;
+    display: none;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Стили для панели управления */
+#video-controls-panel {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    width: 260px;
+    height: 50px;
+    background: white;
+    border-radius: 0 0 8px 8px;
+    display: none;
+    z-index: 1040;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    padding: 8px;
+}
+
+

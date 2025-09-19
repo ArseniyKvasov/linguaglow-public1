@@ -1,0 +1,8 @@
+<form method="post" action="{% url 'create_promo' %}">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="promo_code">Промокод</label>
+        <input type="text" class="form-control" id="promo_code" name="code" required>
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Создать промокод</button>
+</form>

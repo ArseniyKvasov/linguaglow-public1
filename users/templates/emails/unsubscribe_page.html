@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Отписка от рассылки</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light text-center p-5">
+    <div id="special-text">
+        <h2>Вы действительно хотите отписаться от рассылки?</h2>
+        <p>Вы перестанете получать персональные акции, напоминания и бонусы.</p>
+    </div>
+
+    <button class="btn btn-danger mt-4" data-bs-toggle="modal" data-bs-target="#confirmModal" id="unsubscribe-btn">
+        Отписаться от рассылки
+    </button>
+
+    <!-- Модальное окно -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content text-start">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Подтверждение</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    Вы уверены? После этого вы:
+                    <ul>
+                        <li>Больше не получите эксклюзивные предложения</li>
+                        <li>Пропустите индивидуальные скидки на тарифы и токены</li>
+                        <li>Не сможете восстановить доступ к старым письмам</li>
+                    </ul>
+                    <strong>Это действие можно будет отменить позже в профиле.</strong>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-danger" id="confirmUnsubscribe">Подтвердить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="status" class="mt-4 text-success fw-bold"></div>
+
+    <script>
+        const uid = "{{ uid }}";
+        const token = "{{ token }}";
+
+        document.getElementById("confirmUnsubscribe").addEventListener("click", function () {
+            fetch("/users/unsubscribe/confirm/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: `uid=${uid}&token=${token}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "ok") {
+                    document.getElementById("status").innerText = "Вы успешно отписались от рассылки. Уведомления все еще можно будет вернуть в настройках профиля.";
+                    let modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
+                    modal.hide();
+                    document.getElementById("unsubscribe-btn").remove();
+                    document.getElementById("special-text").remove();
+                } else {
+                    alert("Ошибка: " + (data.error || "Неизвестная ошибка"));
+                }
+            })
+            .catch(err => alert("Ошибка соединения"));
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+{# templates/admin/user_metrics.html #}
+{% load static %}
+<div class="container-fluid py-3 card m-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">User Metrics</h5>
+    </div>
+
+    {# Ошибка из контекста (если есть) #}
+    {% if error %}
+        <div class="alert alert-danger" role="alert">
+            <strong>Ошибка:</strong> {{ error }}
+        </div>
+    {% endif %}
+
+    {# Фильтры #}
+    <form method="get" class="row g-2 align-items-end mb-3">
+        <div class="col-auto">
+            <label class="form-label mb-0 small">Поиск</label>
+            <input type="text" name="q" value="{{ search|default:'' }}" class="form-control form-control-sm" placeholder="username, email или id">
+        </div>
+
+        <div class="col-auto">
+            <label class="form-label mb-0 small">Роль</label>
+            <select name="role" class="form-select form-select-sm">
+                <option value="">Все роли</option>
+                <option value="teacher" {% if role_filter == 'teacher' %}selected{% endif %}>Teacher</option>
+                <option value="student" {% if role_filter == 'student' %}selected{% endif %}>Student</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <label class="form-label mb-0 small">Teaching role</label>
+            <input type="text" name="teaching_role" value="{{ teaching_role_filter|default:'' }}" class="form-control form-control-sm" placeholder="например: senior, math, physics">
+        </div>
+
+        <div class="col-auto">
+            <div class="form-check form-check-inline mt-2">
+                <input class="form-check-input" type="checkbox" id="show_all" name="show_all" value="1" {% if show_all %}checked{% endif %}>
+                <label class="form-check-label small" for="show_all">Показать всё</label>
+            </div>
+        </div>
+
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary btn-sm">Фильтровать</button>
+            <a href="{% url request.resolver_match.view_name %}" class="btn btn-outline-secondary btn-sm">Сброс</a>
+        </div>
+    </form>
+
+    {# Таблица пользователей #}
+    <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th class="text-nowrap">ID</th>
+                    <th>Username</th>
+                    <th class="d-none d-md-table-cell">Email</th>
+                    <th>Role</th>
+                    <th>Teaching role</th>
+
+                    <th class="text-end text-nowrap">is new</th>
+                    <th class="text-end text-nowrap">PDF</th>
+                    <th class="text-end text-nowrap">AI req</th>
+                    <th class="text-end text-nowrap">Tasks</th>
+                    <th class="text-end text-nowrap">Sections</th>
+                    <th class="text-end text-nowrap">Lessons</th>
+
+                    <th>First activity</th>
+                    <th>Last activity</th>
+                    <th class="text-center">Retention (D1/D3/D7)</th>
+
+                    <th>Onboarding</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if users %}
+                    {% for u in users %}
+                        <tr>
+                            <td class="text-nowrap"><strong>{{ u.id }}</strong></td>
+                            <td>
+                                <div>{{ u.username }}</div>
+                            </td>
+                            <td class="d-none d-md-table-cell"><small class="text-muted">{{ u.email }}</small></td>
+                            <td>
+                                <span class="badge bg-secondary">{{ u.role_display|default:u.role }}</span>
+                            </td>
+                            <td class="d-none d-lg-table-cell">{{ u.teaching_role|default:"—" }}</td>
+                            <td class="text-center">
+                                {% if u.is_new %}
+                                    <span class="badge bg-success">Yes</span>
+                                {% else %}
+                                    <span class="badge bg-light text-muted">No</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-end">{{ u.pdf_downloaded_counter|default:0 }}</td>
+                            <td class="text-end">{{ u.ai_requests_counter|default:0 }}</td>
+                            <td class="text-end">{{ u.tasks_generated_counter|default:0 }}</td>
+                            <td class="text-end d-none d-md-table-cell">{{ u.sections_generated_counter|default:0 }}</td>
+                            <td class="text-end d-none d-md-table-cell">{{ u.lessons_generated_counter|default:0 }}</td>
+
+                            <td class="d-none d-lg-table-cell">
+                                {% if u.first_activity_at %}
+                                    {{ u.first_activity_at|date:"d.m.Y H:i" }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="d-none d-lg-table-cell">
+                                {% if u.last_activity_at %}
+                                    {{ u.last_activity_at|date:"d.m.Y H:i" }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-center text-nowrap">
+                                {# D1/D3/D7 #}
+                                {% with r=u.retention %}
+                                    {% if r.D1 %}
+                                        <span class="me-1 text-success" title="D1: returned">✓</span>
+                                    {% else %}
+                                        <span class="me-1 text-danger" title="D1: not returned">✕</span>
+                                    {% endif %}
+
+                                    {% if r.D3 %}
+                                        <span class="me-1 text-success" title="D3: returned">✓</span>
+                                    {% else %}
+                                        <span class="me-1 text-danger" title="D3: not returned">✕</span>
+                                    {% endif %}
+
+                                    {% if r.D7 %}
+                                        <span class="text-success" title="D7: returned">✓</span>
+                                    {% else %}
+                                        <span class="text-danger" title="D7: not returned">✕</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+
+                            <td class="d-none d-xl-table-cell">
+                                <div class="small mt-1">
+                                    {% if u.onboarding_done %}
+                                        <span class="badge bg-success">Done</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">{{ u.onboarding_step|default:"—" }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="100%" class="text-center text-muted py-4">
+                            Нет пользователей для отображения.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Footer: отображаем сколько показываем #}
+    <div class="d-flex justify-content-between align-items-center mt-2">
+        <small class="text-muted">Показано: {{ users|length }} записей</small>
+        <small class="text-muted">Всего: {{ total_count|default:0 }}</small>
+    </div>
+</div>

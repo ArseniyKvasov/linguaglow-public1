@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <title>LinguaGlow</title>
+    {% load custom_filters %}
+    {% load custom_users_tags %}
+    {% load static %}
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <style>
+        /* Позиционирование карточки и кнопки удаления */
+        .card.h-100 {
+            position: relative; /* нужно для абсолютного позиционирования кнопки */
+        }
+        .stretched-link {
+            z-index: 1; /* ссылка под кнопкой */
+        }
+
+        /* Кнопка удаления: снизу справа, без рамки, серая иконка */
+        .card .delete-btn {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            z-index: 1060; /* выше, чем stretched-link */
+            pointer-events: auto; /* гарантируем кликабельность */
+            background: transparent;
+            border: none;
+            padding: 4px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .card .open-btn {
+            position: absolute;
+            left: 12px;
+            bottom: 12px;
+            pointer-events: auto; /* гарантируем кликабельность */
+            border: none;
+            padding: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* Иконка — серого цвета, чуть больше для удобства клика */
+        .card .delete-btn .bi {
+            font-size: 1.15rem;
+            color: #6c757d; /* Bootstrap text-muted цвет */
+            vertical-align: middle;
+        }
+
+        /* Визуальная подсказка при наведении — чуть темнее */
+        .card .delete-btn:hover .bi {
+            color: #495057;
+        }
+
+        /* Убираем фокусный контур (если хотите сохранять — удалите это правило) */
+        .card .delete-btn:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        /* Немного отступа у тела карточки, чтобы кнопка не закрывала текст */
+        .card-body.pb-5 {
+            padding-bottom: 3.5rem; /* достаточный отступ для кнопки */
+        }
+
+        @media (max-width: 768px) {
+            .username-text {
+                display: inline-block;
+                max-width: 15ch; /* 15 символов */
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
+        /* На компьютере — до 30 символов */
+        @media (min-width: 769px) {
+            .username-text {
+                display: inline-block;
+                max-width: 30ch; /* 30 символов */
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=103833195', 'ym');
+
+        ym(103833195, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/103833195" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <div class="container mt-4">
+        <!-- Приветствие -->
+        <div class="alert alert-primary text-center" role="alert" id="hello-message" data-username="{{ username }}">
+            <h2 class="username-text">Добро пожаловать, {{ username }}!</h2>
+        </div>
+
+        {% if notifications %}
+            <div class="mb-4">
+                {% for note in notifications %}
+                    <div class="border rounded-3 p-3 mb-3 position-relative" style="background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <div class="me-5">
+                            <h5 class="mb-2" style="font-weight: 600;">{{ note.title }}</h5>
+                            <p class="mb-5" style="color: #444;">{{ note.message }}</p>
+                            {% if note.link %}
+                                <a href="{{ note.link }}"
+                                   class="btn btn-success btn-sm rounded position-absolute"
+                                   style="bottom: 12px; right: 12px;"
+                                   target="_blank" rel="noopener noreferrer">
+                                    Подробнее
+                                </a>
+                            {% endif %}
+                        </div>
+                        <form method="post" action="{% url 'hide_notification' note.id %}"
+                              class="position-absolute top-0 end-0 m-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-close" aria-label="Скрыть"></button>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Блок с курсами -->
+        <div class="card shadow-sm mb-5">
+            <div class="card-body">
+                <div id="elementContent">
+                    <div id="course_list">
+                        <div class="container py-4">
+                            <!-- Шапка страницы -->
+                            <header class="d-flex justify-content-between align-items-center mb-4">
+                                <h1 class="h3 text-primary">
+                                    <i class="bi bi-mortarboard"></i> Мои ресурсы
+                                </h1>
+                                <div>
+                                    <span class="badge bg-light text-dark d-flex align-items-center">
+                                        <i class="bi bi-person-circle me-1"></i> {{ user.get_full_name|default:user.username }}
+                                    </span>
+                                </div>
+                            </header>
+
+                            {# Секция классов #}
+                            <section class="mb-5">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h2 class="h4 text-success">
+                                        <i class="bi bi-people-fill"></i> Мои классы
+                                    </h2>
+                                    {% if role == "teacher" %}
+                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createClassroomModal">
+                                        <i class="bi bi-plus me-1"></i> Класс
+                                    </button>
+                                    {% endif %}
+                                </div>
+
+                                {% if classrooms %}
+                                    {# показываем первые 6 классов #}
+                                    <div class="row g-4">
+                                        {% for classroom in classrooms|slice:":6" %}
+                                            <div class="col-md-6 col-lg-4">
+                                                <div class="classroom-card card h-100 shadow-sm border-0">
+                                                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                                        <h3 class="h6 mb-0 text-truncate">{{ classroom.name }}</h3>
+                                                        <span class="badge {% if user in classroom.teachers.all %}bg-primary{% else %}bg-success{% endif %} px-2 py-1 badge-role">
+                                                            {% if user in classroom.teachers.all %}Учитель{% else %}Ученик{% endif %}
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="card-body pb-5">
+                                                        <p class="mb-2 small text-muted">
+                                                            <i class="bi bi-journal-bookmark me-1"></i>
+                                                            Урок: {{ classroom.lesson.name|default:"—" }}
+                                                        </p>
+                                                        <p class="mb-0 small text-muted">
+                                                            <i class="bi bi-people me-1"></i>
+                                                            {{ classroom.students.count }}
+                                                            {% if classroom.students.count == 1 %}ученик{% else %}учеников{% endif %}
+                                                        </p>
+
+                                                        {# Кнопка удаления: снизу справа, видима только учителю #}
+                                                        {% if user in classroom.teachers.all %}
+                                                            <button
+                                                                type="button"
+                                                                class="delete-classroom delete-btn"
+                                                                data-classroom-id="{{ classroom.id }}"
+                                                                data-classroom-name="{{ classroom.name }}"
+                                                                title="Удалить класс"
+                                                                aria-label="Удалить класс"
+                                                            >
+                                                                <i class="bi bi-trash" aria-hidden="true"></i>
+                                                            </button>
+                                                        {% endif %}
+
+                                                        {# Новая кнопка "Перейти" #}
+                                                        <a href="{% url 'classroom_view' classroom.id %}" class="open-btn btn btn-sm border-0 rounded-pill px-3 mt-2">
+                                                            Перейти
+                                                        </a>
+                                                    </div>
+
+                                                    {# Ссылка на просмотр для всей карточки — остаётся #}
+                                                    <a href="{% url 'classroom_view' classroom.id %}" class="stretched-link"></a>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+
+                                        {% for classroom in classrooms|slice:"6:" %}
+                                            <div class="col-md-6 col-lg-4 extra-item d-none">
+                                                <div class="card h-100 shadow-sm border-0">
+                                                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                                        <h3 class="h6 mb-0 text-truncate">{{ classroom.name }}</h3>
+                                                        <span class="badge {% if user in classroom.teachers.all %}bg-primary{% else %}bg-success{% endif %} px-2 py-1">
+                                                            {% if user in classroom.teachers.all %}Учитель{% else %}Ученик{% endif %}
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="card-body pb-5">
+                                                        <p class="mb-2 small text-muted">
+                                                            <i class="bi bi-journal-bookmark me-1"></i>
+                                                            Урок: {{ classroom.lesson.name|default:"—" }}
+                                                        </p>
+                                                        <p class="mb-0 small text-muted">
+                                                            <i class="bi bi-people me-1"></i>
+                                                            {{ classroom.students.count }}
+                                                            {% if classroom.students.count == 1 %}ученик{% else %}учеников{% endif %}
+                                                        </p>
+
+                                                        {% if user in classroom.teachers.all %}
+                                                            <button
+                                                                type="button"
+                                                                class="delete-classroom delete-btn"
+                                                                data-classroom-id="{{ classroom.id }}"
+                                                                data-classroom-name="{{ classroom.name }}"
+                                                                title="Удалить класс"
+                                                                aria-label="Удалить класс"
+                                                            >
+                                                                <i class="bi bi-trash" aria-hidden="true"></i>
+                                                            </button>
+                                                        {% endif %}
+
+                                                        {# Новая кнопка "Перейти" #}
+                                                        <a href="{% url 'classroom_view' classroom.id %}" class="open-btn btn border-0 rounded-pill px-3 mt-2">
+                                                            Перейти
+                                                        </a>
+                                                    </div>
+
+                                                    <a href="{% url 'classroom_view' classroom.id %}" class="stretched-link"></a>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+
+                                    {% if classrooms|length > 6 %}
+                                        <div class="text-center mt-3">
+                                            <button class="btn border-0 text-primary fw-bold show-more-btn">Показать больше</button>
+                                        </div>
+                                    {% endif %}
+
+                                {% else %}
+                                    <div class="card shadow-sm border-0 text-center py-5">
+                                        <i class="bi bi-people text-muted mb-3" style="font-size: 3rem;"></i>
+                                        <h4 class="mb-2">Нет активных классов</h4>
+                                        <p class="text-muted mb-0 d-flex align-items-center justify-content-center">
+                                            {% if role == 'teacher' %}
+                                                {% if tariff.get_tariff_type_display == "Бесплатный" or tariff.get_tariff_type_display == "Базовый" or not is_tariff_active %}
+                                                    <span>Повышайте лояльность учеников и сохраняйте время на важное с Премиум-тарифами -
+                                                    <a href="{% url 'shop' %}" class="fw-bold text-primary text-decoration-none">Попробовать</a></span>
+                                                {% else %}
+                                                    Создайте новый класс через кнопку “+” при добавлении урока
+                                                {% endif %}
+                                            {% else %}
+                                                Получите приглашение от учителя
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                {% endif %}
+                            </section>
+
+                            {# Секция домашнего задания #}
+                            {% if student_homeworks or teacher_homeworks %}
+                            <section class="mb-5">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h2 class="h4 text-warning">
+                                        <i class="bi bi-journal-text"></i> Домашнее задание
+                                    </h2>
+                                </div>
+
+                                <div class="row g-4">
+                                    {# первые 6 домашних как студент #}
+                                    {% for hw in student_homeworks|slice:":6" %}
+                                        <div class="col-md-6 col-lg-4">
+                                            <div class="card h-100 shadow-sm border-0">
+                                                <div class="card-header bg-white border-0 rounded">
+                                                    <h3 class="h6 mb-1 text-truncate">{{ hw.classroom.name }}</h3>
+                                                    <small class="text-muted">{{ hw.lesson.name }}</small>
+                                                </div>
+                                                <div class="card-body">
+                                                    <span class="badge {% if hw.status == 'sent' %}bg-info{% elif hw.status == 'resent' %}bg-danger{% elif hw.status == 'completed' %}bg-primary{% else %}bg-success{% endif %} px-2 py-1 d-inline-flex align-items-center">
+                                                        {{ hw.get_status_display }}
+                                                    </span>
+                                                </div>
+                                                <a href="{% url 'classroom_homework_view' hw.classroom.id hw.lesson.id %}" class="stretched-link"></a>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+
+                                    {# остальные домашние как студент #}
+                                    {% for hw in student_homeworks|slice:"6:" %}
+                                        <div class="col-md-6 col-lg-4 extra-item d-none">
+                                            <div class="card h-100 shadow-sm border-0">
+                                                <div class="card-header bg-white border-0 rounded">
+                                                    <h3 class="h6 mb-1 text-truncate">{{ hw.classroom.name }}</h3>
+                                                    <small class="text-muted">{{ hw.lesson.name }}</small>
+                                                </div>
+                                                <div class="card-body">
+                                                    <span class="badge {% if hw.status == 'sent' %}bg-info{% elif hw.status == 'resent' %}bg-danger{% elif hw.status == 'completed' %}bg-primary{% else %}bg-success{% endif %} px-2 py-1 d-inline-flex align-items-center">
+                                                        {{ hw.get_status_display }}
+                                                    </span>
+                                                </div>
+                                                <a href="{% url 'classroom_homework_view' hw.classroom.id hw.lesson.id %}" class="stretched-link"></a>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+
+                                    {% if student_homeworks|length > 6 %}
+                                        <div class="text-center mt-3 w-100">
+                                            <button class="btn border-0 text-primary fw-bold show-more-btn">Показать больше</button>
+                                        </div>
+                                    {% endif %}
+
+                                    {# первые 6 домашних как учитель #}
+                                    {% if role == 'teacher' %}
+                                        {% for hw in teacher_homeworks|slice:":6" %}
+                                            <div class="col-md-6 col-lg-4">
+                                                <div class="card h-100 shadow-sm border-0">
+                                                    <div class="card-header bg-white border-0 rounded">
+                                                        <div class="d-flex justify-content-between">
+                                                            <h3 class="h6 mb-1 text-truncate">{{ hw.classroom.name }} — {{ hw.student.username }}</h3>
+                                                            <span class="badge {% if hw.status == 'sent' %}bg-info{% elif hw.status == 'resent' %}bg-danger{% elif hw.status == 'completed' %}bg-warning{% else %}bg-success{% endif %} px-2 py-1 d-inline-flex align-items-center">
+                                                                {{ hw.get_status_display }}
+                                                            </span>
+                                                        </div>
+                                                        <small class="text-muted">{{ hw.lesson.name }}</small>
+                                                    </div>
+                                                    <a href="{% url 'classroom_homework_view' hw.classroom.id hw.lesson.id %}" class="stretched-link"></a>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+
+                                        {# остальные домашние как учитель #}
+                                        {% for hw in teacher_homeworks|slice:"6:" %}
+                                            <div class="col-md-6 col-lg-4 extra-item d-none">
+                                                <div class="card h-100 shadow-sm border-0">
+                                                    <div class="card-header bg-white border-0 rounded">
+                                                        <div class="d-flex justify-content-between">
+                                                            <h3 class="h6 mb-1 text-truncate">{{ hw.classroom.name }} — {{ hw.student.username }}</h3>
+                                                            <span class="badge {% if hw.status == 'sent' %}bg-info{% elif hw.status == 'resent' %}bg-danger{% elif hw.status == 'completed' %}bg-warning{% else %}bg-success{% endif %} px-2 py-1 d-inline-flex align-items-center">
+                                                                {{ hw.get_status_display }}
+                                                            </span>
+                                                        </div>
+                                                        <small class="text-muted">{{ hw.lesson.name }}</small>
+                                                    </div>
+                                                    <a href="{% url 'classroom_homework_view' hw.classroom.id hw.lesson.id %}" class="stretched-link"></a>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+
+                                        {% if teacher_homeworks|length > 6 %}
+                                            <div class="text-center mt-3 w-100">
+                                                <button class="btn border-0 text-primary fw-bold show-more-btn">Показать больше</button>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </section>
+                            {% endif %}
+
+
+                            {# Секция курсов и оплаты для учителя #}
+                            {% if role == 'teacher' %}
+                            <section class="mb-5">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h2 class="h4 text-primary">
+                                        <i class="bi bi-journal-bookmark-fill"></i> Мои курсы
+                                    </h2>
+                                    <!-- Кнопка "Новый курс" -->
+                                    <button id="newCourseBtn" class="btn btn-sm btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+                                        <i class="bi bi-plus-lg me-1"></i> Курс
+                                    </button>
+                                </div>
+
+                                {% if courses %}
+                                    <div class="row g-4">
+                                        {% for course in courses|slice:":6" %}
+                                            <div class="col-md-6 col-lg-4">
+                                                <div class="course-card pb-5 card h-100 shadow-sm border-0">
+                                                    <div class="card-header bg-white border-0 rounded">
+                                                        <h3 class="h6 mb-1 text-truncate">{{ course.name }}</h3>
+                                                        <small class="text-muted">Уроков: {{ course.lessons.count }}</small>
+                                                    </div>
+
+                                                    <!-- Кнопки внизу карточки -->
+                                                    <div class="card-buttons">
+                                                        <!-- Кнопка удаления -->
+                                                        <button
+                                                            class="delete-btn delete-course btn btn-sm btn-outline-danger"
+                                                            data-course-id="{{ course.id }}"
+                                                            data-course-name="{{ course.name }}"
+                                                            title="Удалить курс"
+                                                            aria-label="Удалить курс">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+
+                                                        <!-- Кнопка перехода -->
+                                                        <a href="{% url 'lesson_list' course.id %}"
+                                                           class="open-btn btn btn-sm border-0 px-3 rounded-pill"
+                                                           aria-label="Перейти к курсу">
+                                                            Открыть
+                                                        </a>
+                                                    </div>
+
+                                                    <a href="{% url 'lesson_list' course.id %}" class="stretched-link"></a>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+
+                                        {% for course in courses|slice:"6:" %}
+                                            <div class="col-md-6 col-lg-4 extra-item d-none">
+                                                <div class="course-card card pb-5 h-100 shadow-sm border-0 position-relative">
+                                                    <div class="card-header bg-white border-0 rounded">
+                                                        <h3 class="h6 mb-1 text-truncate">{{ course.name }}</h3>
+                                                        <small class="text-muted">Уроков: {{ course.lessons.count }}</small>
+                                                    </div>
+
+                                                    <!-- Кнопки внизу карточки -->
+                                                    <div class="card-buttons position-absolute bottom-2 start-2 d-flex gap-2">
+                                                        <!-- Кнопка удаления -->
+                                                        <button
+                                                            class="delete-btn delete-course btn btn-sm btn-outline-danger"
+                                                            data-course-id="{{ course.id }}"
+                                                            data-course-name="{{ course.name }}"
+                                                            title="Удалить курс"
+                                                            aria-label="Удалить курс">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+
+                                                        <!-- Кнопка перехода -->
+                                                        <a href="{% url 'lesson_list' course.id %}"
+                                                           class="open-btn btn btn-sm border-0 px-3 rounded-pill"
+                                                           aria-label="Перейти к курсу">
+                                                            Открыть
+                                                        </a>
+                                                    </div>
+
+                                                    <a href="{% url 'lesson_list' course.id %}" class="stretched-link"></a>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+
+                                    {% if courses|length > 6 %}
+                                        <div class="text-center mt-3">
+                                            <button class="btn border-0 text-primary fw-bold show-more-btn">Показать больше</button>
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="card shadow-sm border-0 text-center py-5">
+                                        <i class="bi bi-journal-text text-muted mb-3" style="font-size: 3rem;"></i>
+                                        <h4 class="mb-2">Нет активных курсов</h4>
+                                        <p class="text-muted mb-0">Создайте курс, чтобы собрать уроки и классы</p>
+                                    </div>
+                                {% endif %}
+                            </section>
+
+                            <section class="mb-5">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h2 class="h4 text-primary d-flex align-items-center gap-2">
+                                        <i class="bi bi-person-circle"></i>
+                                        Кабинет пользователя
+                                    </h2>
+                                </div>
+
+                                <div class="card border-0 rounded-3 shadow-sm p-4 mb-4">
+                                    <div class="row text-center gx-4 gy-3">
+                                        <!-- Токены -->
+                                        <div class="col-12 col-md-4">
+                                            <div class="text-uppercase small text-muted mb-1">Токены</div>
+                                            <div class="fs-2 fw-bold {% if tokens < 100 %} text-danger {% elif tokens < 500 %} text-warning {% else %} text-success {% endif %}">
+                                                {{ tokens }}
+                                            </div>
+                                        </div>
+
+                                        <!-- Использовано -->
+                                        <div class="col-12 col-md-4">
+                                            <div class="text-uppercase small text-muted mb-1">Использовано</div>
+                                                <div class="d-flex justify-content-center align-items-baseline gap-2 mb-2">
+                                                    <span>{{ usage }} / {{ max_usage }} ГБ</span>
+                                                    <span class="text-muted">({{ usage_percent }}%)</span>
+                                                </div>
+                                                <div class="progress" style="height:6px; max-width:180px; margin:0 auto;">
+                                                    <div class="progress-bar
+                                                        {% if usage_percent < 30 %}
+                                                            bg-success
+                                                        {% elif usage_percent < 70 %}
+                                                            bg-warning
+                                                        {% else %}
+                                                            bg-danger
+                                                        {% endif %}"
+                                                        role="progressbar"
+                                                        style="width: {{ usage_percent }}%;"
+                                                        aria-valuenow="{{ usage_percent }}"
+                                                        aria-valuemin="0"
+                                                        aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                        </div>
+
+                                        <!-- Тариф -->
+                                        <div class="col-12 col-md-4">
+                                            <div class="text-uppercase small text-muted mb-1">Тариф</div>
+                                            <div class="d-flex justify-content-center align-items-center gap-2">
+                                                <span class="badge rounded-pill px-3 py-2"
+                                                      style="background:linear-gradient(135deg,#4e54c8,#8f94fb);color:#fff;">
+                                                    {{ tariff.get_tariff_type_display }}
+                                                </span>
+                                                <span class="d-inline-block rounded-circle {{ is_tariff_active|yesno:'bg-success,bg-danger' }}"
+                                                      style="width:10px;height:10px;"
+                                                      title="{{ tariff_tooltip }}"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-3 text-center text-muted small">
+                                        Следующее обновление токенов: {{ next_reset_date|default:"—" }}
+                                    </div>
+                                </div>
+
+                                <!-- 2) Контекст -->
+                                <div class="mb-4 position-relative p-3 rounded-3 bg-white shadow-sm">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label class="form-label text-muted small mb-2 me-2">Длина контекста (символов)</label>
+
+                                        <!-- селектор -->
+                                        <select id="context-length" class="form-select w-auto" style="min-width: 120px;">
+                                            <option value="1000" {% if context_length == 1000 %}selected{% endif %}>1000</option>
+                                            <option value="2000" {% if context_length == 2000 %}selected{% endif %}>2000</option>
+                                            <option value="4000" {% if context_length == 4000 %}selected{% endif %}>4000</option>
+                                            <option value="8000" {% if context_length == 8000 %}selected{% endif %}>8000</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Инфо-плашка -->
+                                    <div id="context-info" class="mt-2 p-3 rounded-2 text-dark bg-light small border">
+                                        <strong>{{ context_length }} символов</strong> —
+                                        {% if context_length == 1000 %}
+                                            Подходит для небольших и простых тем.<br>Минимальная стоимость генерации.
+                                        {% elif context_length == 2000 %}
+                                            Оптимально для связанных и лёгких занятий.<br>Экономичная генерация.
+                                        {% elif context_length == 4000 %}
+                                            Идеально для уроков со статьями и аудио.<br>Баланс цены и качества генерации.
+                                        {% else %}
+                                            Для серьёзной подготовки к международным экзаменам.<br>Высокая стоимость, максимальное качество.
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="d-flex justify-content-end align-items-center mt-2">
+                                        <!-- Кнопка Сохранить -->
+                                        <button id="save-context" type="button"
+                                                class="btn btn-success rounded-pill"
+                                                style="display:none;">
+                                            Сохранить
+                                        </button>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <script>
+                            (function(){
+                                const infoMap = {
+                                    1000: ['Подходит для небольших и простых тем.', 'Минимальная стоимость генерации.'],
+                                    2000: ['Оптимально для связанных и лёгких занятий.', 'Экономичная генерация.'],
+                                    4000: ['Идеально для уроков со статьями и аудио.', 'Баланс цены и качества генерации.'],
+                                    8000: ['Для серьёзной подготовки к международным экзаменам.', 'Высокая стоимость, максимальное качество.']
+                                };
+                                const select = document.getElementById('context-length');
+                                const buttons = document.querySelectorAll('.btn-group [data-value]');
+                                const infoEl = document.getElementById('context-info');
+                                const saveBtn = document.getElementById('save-context');
+                                let current = String({{ context_length }});
+
+                                function updateUI(val){
+                                    // обновить инфо
+                                    const [l1, l2] = infoMap[val];
+                                    infoEl.innerHTML = `<strong>${val} символов</strong> — ${l1}<br>${l2}`;
+                                    // выделить кнопку
+                                    buttons.forEach(btn => {
+                                        btn.classList.toggle('active', btn.getAttribute('data-value') === val);
+                                    });
+                                    // обновить select
+                                    if(select) select.value = val;
+                                    // показать кнопку сохранить, если значение изменилось
+                                    saveBtn.style.display = (val !== current) ? 'block' : 'none';
+                                }
+
+                                // обработка select
+                                if(select){
+                                    select.addEventListener('change', e => {
+                                        updateUI(e.target.value);
+                                    });
+                                }
+                                // обработка btn-group
+                                buttons.forEach(btn => {
+                                    btn.addEventListener('click', () => {
+                                        updateUI(btn.getAttribute('data-value'));
+                                    });
+                                });
+                                // действие "Сохранить"
+                                saveBtn.addEventListener('click', () => {
+                                    fetch('{% url "save_context_length" %}', {
+                                        method: 'POST',
+                                        headers: {'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+                                        body: JSON.stringify({context_length: select.value})
+                                    }).then(r => {
+                                        if(r.ok){
+                                            current = select.value;
+                                            saveBtn.style.display = 'none';
+                                        }
+                                    });
+                                });
+                            })();
+                            </script>
+                            {% endif %}
+
+                            <!-- Модальное окно добавления курса -->
+                            <div class="modal fade" id="addCourseModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <form method="POST" action="{% url 'create_course' %}" id="courseForm">
+                                            {% csrf_token %}
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">
+                                                    Создание нового курса
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <input type="text" class="form-control" id="name" name="name" required
+                                                           placeholder="Введите название курса">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <select class="form-select" id="student_level" name="student_level" required>
+                                                        <option value="" disabled selected>Выберите уровень</option>
+                                                        <option value="starter">Starter (Начальный)</option>
+                                                        <option value="elementary">Elementary (Элементарный)</option>
+                                                        <option value="pre_intermediate">Pre-Intermediate (Ниже среднего)</option>
+                                                        <option value="intermediate">Intermediate (Средний)</option>
+                                                        <option value="upper_intermediate">Upper-Intermediate (Выше среднего)</option>
+                                                        <option value="advanced">Advanced (Продвинутый)</option>
+                                                    </select>
+                                                </div>
+                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn border-0" data-bs-dismiss="modal">
+                                                    Отмена
+                                                </button>
+                                                <button type="submit" class="btn border-0 text-primary fw-bold">
+                                                    Сохранить курс
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button id="accountModalOpenBtn" class="btn btn-outline-primary rounded-pill px-4 py-2 shadow-sm">
+                                    Аккаунт
+                                </button>
+
+                                <div class="d-flex align-items-center flex-column flex-sm-row gap-2 ms-1">
+                                    <a href="https://t.me/linguaglowru"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="text-decoration-none d-block text-muted hover-text-primary text-end">
+                                        <i class="bi bi-telegram me-1 text-primary"></i>Telegram
+                                    </a>
+
+                                    <a href="{% url 'public_lessons' %}"
+                                       class="text-decoration-none d-block text-muted hover-text-primary text-end">
+                                        <i class="bi bi-journal-text me-1 text-success"></i>Готовые PDF
+                                    </a>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center my-3">
+            <a href="{% url 'shop' %}" class="btn btn-primary shadow fs-3 rounded-pill px-4 py-2 w-100 {% if role != 'teacher' %} d-none {% endif %}">
+                Перейти в магазин
+            </a>
+        </div>
+    </div>
+
+    <!-- Модалка создания класса -->
+    <div class="modal fade" id="createClassroomModal" tabindex="-1" aria-labelledby="createClassroomModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createClassroomModalLabel">Создать новый класс</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createClassroomForm" method="post" action="{% url 'create_classroom' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label">Название класса</label>
+                            <input type="text" name="name" maxlength="255" class="form-control" placeholder="Введите название класса" id="id_name" required>
+                            <div class="invalid-feedback" data-field="name"></div>
+                        </div>
+                        <button type="submit" id="createNewClassSubmit" class="btn btn-primary w-100">Создать</button>
+                    </form>
+
+                    <!-- Сообщение после отправки -->
+                    <div id="createClassroomMessage" class="mt-3 text-center" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function getCookie(name) {
+let cookieValue = null;
+if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+        }
+    }
+}
+return cookieValue;
+}
+
+    (function () {
+        const form = document.getElementById('createClassroomForm');
+        const msgBlock = document.getElementById('createClassroomMessage');
+        const modalEl = document.getElementById('createClassroomModal');
+        const bsModal = new bootstrap.Modal(modalEl);
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Сброс ошибок
+            form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+
+            const url = form.action;
+            const formData = new FormData(form);
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData,
+            })
+            .then(async (resp) => {
+                if (resp.ok) return resp.json();
+                const json = await resp.json().catch(()=>null);
+                throw {status: resp.status, json};
+            })
+            .then(data => {
+                msgBlock.style.display = 'block';
+                msgBlock.className = 'mt-3 text-center text-success';
+                msgBlock.textContent = data.message || 'Класс создан!';
+
+                form.reset();
+
+                setTimeout(() => {
+                    bsModal.hide();
+                    msgBlock.style.display = 'none';
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    }
+                }, 1500);
+            })
+            .catch(err => {
+                if (err.status === 403 && err.json && err.json.message) {
+                    msgBlock.style.display = 'block';
+                    msgBlock.className = 'mt-3 text-center text-danger';
+                    msgBlock.textContent = err.json.message;
+                    const createClassBtn = document.getElementById('createNewClassSubmit');
+                    if (createClassBtn) {
+                        createClassBtn.disabled = true;
+                    }
+                    return;
+                }
+
+                if (err.json && err.json.errors) {
+                    const errors = err.json.errors;
+                    for (const [field, msgs] of Object.entries(errors)) {
+                        const input = form.querySelector('[name="' + field + '"]');
+                        if (input) {
+                            input.classList.add('is-invalid');
+                            const fb = form.querySelector('.invalid-feedback[data-field="' + field + '"]');
+                            if (fb) fb.textContent = msgs.join(' ');
+                        }
+                    }
+                } else {
+                    msgBlock.style.display = 'block';
+                    msgBlock.className = 'mt-3 text-center text-danger';
+                    msgBlock.textContent = 'Ошибка создания класса. Попробуйте ещё раз.';
+                }
+            });
+        });
+    })();
+    </script>
+
+
+
+    <!-- Модальное окно подтверждения удаления -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle"></i> Подтверждение удаления
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы действительно хотите удалить <strong id="itemName"></strong>?</p>
+                    <p class="text-muted small">Это действие нельзя отменить.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Отмена
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteButton">
+                        <i class="bi bi-trash"></i> Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="modal fade" id="siteErrorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0">
+                <!-- Заголовок с градиентом -->
+                <div class="modal-header bg-gradient-primary text-black">
+                    <div class="w-100 text-center">
+                        <h5 class="modal-title mb-0">Сообщить об ошибке</h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Тело модалки -->
+                <div class="modal-body px-4 py-3">
+                    <form id="siteErrorForm">
+                        <!-- Поле для описания места ошибки -->
+                        <div class="mb-4">
+                            <label class="form-label text-muted small mb-2">Где произошла ошибка?</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent">
+                                    <i class="bi bi-pin-map text-primary"></i>
+                                </span>
+                                <input type="text"
+                                       class="form-control rounded-end"
+                                       id="errorTitle"
+                                       placeholder="Например: в виртуальном классе"
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Поле для информации об устройстве -->
+                        <div class="mb-3">
+                            <label class="form-label text-muted small mb-2">Устройство и браузер</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent">
+                                    <i class="bi bi-laptop text-primary"></i>
+                                </span>
+                                <textarea class="form-control rounded-end"
+                                          id="errorContent"
+                                          rows="3"
+                                          placeholder="Пример: iPhone 12, Safari 15.1 / Ноутбук ASUS, Windows 10, Chrome 102"
+                                          required></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Поле для контактов -->
+                        <div class="mb-3">
+                            <label class="form-label text-muted small mb-2">Контакты (email, телефон или другое)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent">
+                                    <i class="bi bi-person-lines-fill text-primary"></i>
+                                </span>
+                                <input type="text"
+                                       class="form-control rounded-end"
+                                       id="errorContacts"
+                                       placeholder="Например: email@example.com или +7 999 123-45-67">
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Сообщения об статусе -->
+                    <div id="siteErrorAlert" class="alert alert-dismissible fade show d-none" role="alert">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        <span class="alert-message"></span>
+                    </div>
+
+                    <div id="siteErrorSuccess" class="d-none text-center py-4">
+                        <div class="mb-4">
+                            <i class="bi bi-check2-circle text-success" style="font-size: 3.5rem"></i>
+                        </div>
+                        <h5 class="mb-3">Спасибо за вашу помощь! 🚀</h5>
+                        <p class="text-muted mb-4">
+                            Сообщение успешно отправлено.<br>
+                            Мы исправим проблему в ближайшее время
+                        </p>
+                        <button type="button"
+                                class="btn btn-link text-decoration-none"
+                                data-bs-dismiss="modal">
+                            Закрыть окно
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Футер -->
+                <div class="modal-footer border-0 pt-0" id="siteErrorFooter">
+                    <button type="button"
+                            class="btn btn-link text-muted text-decoration-none"
+                            data-bs-dismiss="modal">
+                        Отмена
+                    </button>
+                    <button type="button"
+                            class="btn btn-primary rounded-pill px-4"
+                            id="submitSiteErrorBtn">
+                        <i class="bi bi-send-check me-2"></i>Отправить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('submitSiteErrorBtn').addEventListener('click', async () => {
+            const alertBox = document.getElementById('siteErrorAlert');
+            const successBox = document.getElementById('siteErrorSuccess');
+            const footer = document.getElementById('siteErrorFooter');
+
+            alertBox.classList.add('d-none');
+            alertBox.classList.remove('alert-success', 'alert-danger');
+            alertBox.textContent = '';
+
+            successBox.classList.add('d-none');
+
+            const title = document.getElementById('errorTitle').value.trim();
+            const content = document.getElementById('errorContent').value.trim();
+            const contacts = document.getElementById('errorContacts').value.trim();  // новое поле
+
+            if (!title || !content) {
+                alertBox.textContent = 'Пожалуйста, заполните все поля.';
+                alertBox.classList.remove('d-none');
+                alertBox.classList.add('alert-danger');
+                return;
+            }
+
+            const username = document.getElementById('hello-message').dataset.username || 'anonymous';
+
+            try {
+                const response = await fetch('/api/report-error/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ username, title, content, contacts, function_name: "reportSiteError" })  // добавляем contacts и function_name
+                });
+
+                if (response.ok) {
+                    alertBox.classList.add('d-none');
+                    successBox.classList.remove('d-none');
+                    footer.classList.add('d-none');
+                    document.getElementById('siteErrorForm').reset();
+
+                    let message = "Спасибо за вашу помощь! 🚀\nСообщение успешно отправлено.\nМы исправим проблему в ближайшее время";
+
+                    if (contacts.length > 8) {
+                        message = "Спасибо за вашу помощь! 🚀\n" +
+                                  "Мы свяжемся с вами, как только проблема будет решена.";
+                    }
+
+                    // Удаляем старые заголовок и описание
+                    const h5 = successBox.querySelector('h5');
+                    const p = successBox.querySelector('p.text-muted');
+                    if (h5) h5.remove();
+                    if (p) p.remove();
+
+                    // Создаем новый блок с сообщением, где переносы — это <br>
+                    const newMsg = document.createElement('div');
+                    newMsg.style.whiteSpace = 'pre-line';
+                    newMsg.className = 'mb-3 text-muted fw-semibold'; // Можно настроить классы по стилю
+                    newMsg.textContent = message;
+
+                    successBox.prepend(newMsg);
+                } else {
+                    const errorData = await response.json();
+                    alertBox.textContent = errorData.detail || 'Ошибка при отправке.';
+                    alertBox.classList.remove('d-none');
+                    alertBox.classList.add('alert-danger');
+                }
+            } catch (error) {
+                alertBox.textContent = 'Ошибка сети или сервера.';
+                alertBox.classList.remove('d-none');
+                alertBox.classList.add('alert-danger');
+            }
+        });
+    </script>
+
+    <style>
+        /* Лёгкие стильные правки для LinguaGlow */
+        :root {
+            --lg-blue: #0d6efd;        /* primary */
+            --lg-green: #20c997;       /* accent */
+            --lg-muted: #6c757d;
+            --lg-radius: .75rem;
+        }
+
+        .lg-modal .modal-content {
+            border-radius: var(--lg-radius);
+            overflow: hidden;
+        }
+
+        .lg-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(13,110,253,0.08), rgba(32,201,151,0.06));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--lg-blue);
+            font-size: 22px;
+        }
+
+        .lg-card {
+            border: 1px solid rgba(13,110,253,0.08);
+            border-radius: .5rem;
+        }
+
+        .lg-action-btn {
+            border-radius: .5rem;
+            padding: .45rem .6rem;
+        }
+
+        .faq-question {
+            display: flex;
+            gap: .5rem;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .faq-hint {
+            font-size: .85rem;
+            color: var(--lg-muted);
+        }
+
+        .faq-tip {
+            background: rgba(32,201,151,0.08);
+            color: var(--lg-green);
+            font-weight: 600;
+            padding: .15rem .45rem;
+            border-radius: .4rem;
+            font-size: .75rem;
+        }
+
+        @media (max-width: 575.98px) {
+            .lg-avatar { width:48px; height:48px; font-size:18px; }
+        }
+    </style>
+
+    <div class="modal fade" id="accountModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content shadow-sm lg-modal">
+                <div class="modal-header border-0 pb-0">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <div class="lg-avatar" aria-hidden="true">
+                                <i class="bi bi-person-circle" style="font-size:28px;"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="modal-title mb-0">Настройки аккаунта</h5>
+                            <div class="small text-muted">Роль: <span class="fw-semibold">{{ role|default:"-" }}</span></div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+
+                <div class="modal-body pt-2">
+                    <div class="row g-3">
+                        <!-- Левая колонка: почта и действия -->
+                        <div class="col-12 col-md-5">
+                            <div class="p-3 lg-card">
+                                <label for="accountModalEmail" class="form-label small text-muted mb-1">Почта</label>
+
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text bg-white"><i class="bi bi-envelope"></i></span>
+                                    <input type="email" readonly class="form-control form-control-sm" id="accountModalEmail" value="{{ user.email|default:'' }}" aria-label="email">
+                                    <button class="btn btn-outline-secondary btn-sm" type="button" id="copyEmailBtn" title="Копировать почту" aria-label="Копировать почту">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </div>
+
+                                <div id="copyEmailFeedback" class="small text-success visually-hidden" aria-live="polite">Скопировано</div>
+
+                                <div class="d-grid gap-2 mt-3">
+                                    {% if role == "teacher" %}
+                                        <button id="accountModalSwitchRoleBtn" class="btn btn-outline-primary lg-action-btn" type="button">
+                                            <i class="bi bi-arrow-left-circle me-1"></i> Перейти на ученический аккаунт
+                                        </button>
+                                    {% else %}
+                                        <button id="accountModalSwitchRoleBtn" class="btn btn-outline-primary lg-action-btn" type="button">
+                                            <i class="bi bi-person-badge me-1"></i> Перейти на учительский аккаунт
+                                        </button>
+                                    {% endif %}
+
+                                    <button id="accountModalSubscribeBtn" class="btn btn-outline-success lg-action-btn" type="button">
+                                        <i class="bi bi-envelope-open me-1"></i> Подписаться на рассылку
+                                    </button>
+
+                                    <a id="accountModalLogoutBtn" href="{% url 'logout' %}" class="btn btn-danger lg-action-btn text-white">
+                                        <i class="bi bi-box-arrow-right me-1"></i> Выйти из аккаунта
+                                    </a>
+                                </div>
+
+                                <hr class="my-3">
+
+                                <div class="small text-muted">
+                                    <button
+                                        class="btn fw-bold text-primary border-0 ms-auto text-center"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#siteErrorModal"
+                                        aria-label="Сообщить об ошибке"
+                                    >
+                                        Сообщить об ошибке
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Правая колонка: FAQ (читабельнее) -->
+                        <div class="col-12 col-md-7">
+                            <div class="accordion" id="accountModalFaq">
+                                {% if role == "student" %}
+                                    <h6 class="mb-2">Для студентов</h6>
+
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingStudent1">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStudent1" aria-expanded="false" aria-controls="collapseStudent1">
+                                                <div class="faq-question"><i class="bi bi-door-open"></i> Как присоединиться к классу?</div>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseStudent1" class="accordion-collapse collapse" aria-labelledby="headingStudent1" data-bs-parent="#accountModalFaq">
+                                            <div class="accordion-body">
+                                                Перейди по ссылке, которую пришлёт учитель. <div class="mt-2 faq-hint">Если ссылка не работает — попробуй открыть её в другом браузере.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingStudent2">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStudent2" aria-expanded="false" aria-controls="collapseStudent2">
+                                                <div class="faq-question"><i class="bi bi-journal-plus"></i> Можно ли создать свой курс?</div>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseStudent2" class="accordion-collapse collapse" aria-labelledby="headingStudent2" data-bs-parent="#accountModalFaq">
+                                            <div class="accordion-body">
+                                                Да — для этого перейди на учительский аккаунт. <span class="faq-tip ms-2">Совет</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingStudent3">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStudent3" aria-expanded="false" aria-controls="collapseStudent3">
+                                                <div class="faq-question"><i class="bi bi-bug"></i> Что-то не работает?</div>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseStudent3" class="accordion-collapse collapse" aria-labelledby="headingStudent3" data-bs-parent="#accountModalFaq">
+                                            <div class="accordion-body">
+                                                Нажми на кнопку "Сообщить об ошибке" внизу интерфейса. Опиши шаги и прикрепи скриншот.
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if role == "teacher" %}
+                                    <h6 class="mb-2">Для учителей</h6>
+
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingTeacher2">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTeacher2" aria-expanded="false" aria-controls="collapseTeacher2">
+                                                <div class="faq-question"><i class="bi bi-person-plus"></i> Как пригласить учеников?</div>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseTeacher2" class="accordion-collapse collapse" aria-labelledby="headingTeacher2" data-bs-parent="#accountModalFaq">
+                                            <div class="accordion-body">
+                                                Открой виртуальный класс → кнопка "Ученики" → Добавить ученика → Отправь ссылку-приглашение.
+                                                Подробнее по <a href="{% url 'invitation_guide' %}" target="_blank">ссылке</a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingTeacher3">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTeacher3" aria-expanded="false" aria-controls="collapseTeacher3">
+                                                <div class="faq-question"><i class="bi bi-lightbulb"></i> Как генерировать задания на основе контекста?</div>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseTeacher3" class="accordion-collapse collapse" aria-labelledby="headingTeacher3" data-bs-parent="#accountModalFaq">
+                                            <div class="accordion-body">
+                                                Добавь задание (Список слов, Заметка, Статья или Аудио) в контекст (иконка закладки) → при генерации выбери "Контекст - Учитывать".
+                                                <div class="mt-2 faq-hint">Контекст улучшает релевантность заданий.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingTeacher4">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTeacher4" aria-expanded="false" aria-controls="collapseTeacher4">
+                                                <div class="faq-question"><i class="bi bi-book"></i> Как генерировать задания по учебнику?</div>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseTeacher4" class="accordion-collapse collapse" aria-labelledby="headingTeacher4" data-bs-parent="#accountModalFaq">
+                                            <div class="accordion-body">
+                                                Работает в режиме генерации (не в виртуальном классе). Выбери до 3 страниц учебника → предварительный просмотр → Сгенерировать.
+                                                Подробнее по <a href="{% url 'course_guide' %}" target="_blank">ссылке</a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- остальная часть FAQ сохранена, только визуально улучшена -->
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingTeacher5">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTeacher5" aria-expanded="false" aria-controls="collapseTeacher5">
+                                                <div class="faq-question"><i class="bi bi-graph-up"></i> Что делать, если не видно действий ученика в реальном времени?</div>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseTeacher5" class="accordion-collapse collapse" aria-labelledby="headingTeacher5" data-bs-parent="#accountModalFaq">
+                                            <div class="accordion-body">
+                                                Попросите ученика обновить страницу или открыть в другом браузере (Chrome, Yandex).
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- остальные пункты остаются такими же по содержанию -->
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 py-3">
+                    <small class="text-muted">Версия интерфейса: <span class="fw-semibold">v1</span></small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Минимальный JS: копирование почты, показ фидбека, открытие модалки -->
+    <script>
+        (function () {
+            // Переменные, передающиеся шаблоном (без придумывания новых полей)
+            const accountModalUser = {
+                email: "{{ email|default:user.email|default:'' }}",
+                role: "{{ role|default:user.role|default:'' }}",
+                marketing_agree: "{{ allow_emails|default:'' }}"
+            };
+
+            // Элементы
+            const accountModalElement = document.getElementById("accountModal");
+            const copyBtn = document.getElementById('copyEmailBtn');
+            const emailInput = document.getElementById('accountModalEmail');
+            const feedback = document.getElementById('copyEmailFeedback');
+            const switchBtn = document.getElementById('accountModalSwitchRoleBtn');
+            const subscribeBtn = document.getElementById('accountModalSubscribeBtn');
+
+            // Инициализация полей
+            if (emailInput) emailInput.value = accountModalUser.email || '';
+
+            // Инициализируем бутстрап-модалку безопасно
+            let accountModalBootstrap = null;
+            try {
+                accountModalBootstrap = new bootstrap.Modal(accountModalElement);
+            } catch (e) {
+                console.warn('Bootstrap Modal init failed', e);
+            }
+
+            // Копирование почты
+            if (copyBtn && emailInput) {
+                copyBtn.addEventListener('click', function () {
+                    const val = emailInput.value || '';
+                    if (!val) return;
+                    navigator.clipboard?.writeText(val).then(function () {
+                        if (feedback) {
+                            feedback.classList.remove('visually-hidden');
+                            setTimeout(function () { feedback.classList.add('visually-hidden'); }, 1400);
+                        }
+                    }).catch(function () {
+                        emailInput.select();
+                    });
+                });
+            }
+
+            // Управление видимостью кнопок (если элементы присутствуют)
+            if (switchBtn) {
+                if (accountModalUser.role !== "student") switchBtn.style.display = "none";
+            }
+            if (subscribeBtn) {
+                if (accountModalUser.marketing_agree === "True") subscribeBtn.style.display = "none";
+            }
+
+            // ПОМОЩЬ: POST helper (использовать при наличии CSRF cookie)
+            async function accountModalPostAction(url, body = {}) {
+                function getCookie(name) {
+                    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+                    if (match) return decodeURIComponent(match[2]);
+                    return null;
+                }
+                const csrfToken = getCookie("csrftoken");
+                try {
+                    const res = await fetch(url, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrfToken || ''
+                        },
+                        body: JSON.stringify(body)
+                    });
+                    return await res.json();
+                } catch (e) {
+                    console.error(e);
+                    return null;
+                }
+            }
+
+            // Действия кнопок
+            if (switchBtn) {
+                switchBtn.addEventListener('click', async function () {
+                    const result = await accountModalPostAction("/api/switch-role/", { role: "teacher" });
+                    // перезагрузим в любом случае — сервер может переписать сессию
+                    location.reload();
+                });
+            }
+
+            if (subscribeBtn) {
+                subscribeBtn.addEventListener('click', async function () {
+                    const result = await accountModalPostAction("/api/subscribe/");
+                    if (result?.success) {
+                        location.reload();
+                    }
+                });
+            }
+
+            // Открытие модалки — если нужен внешний триггер с id="accountModalOpenBtn"
+            const openBtn = document.getElementById("accountModalOpenBtn");
+            if (openBtn && accountModalBootstrap) {
+                openBtn.addEventListener("click", () => accountModalBootstrap.show());
+            }
+        })();
+    </script>
+
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Элементы модалки
+            const confirmDeleteModalEl = document.getElementById('confirmDeleteModal');
+            const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+            const itemNameEl = document.getElementById('itemName');
+
+            // Состояние текущего удаления
+            let deleteUrl = '';
+            let currentItemId = '';
+            let currentCard = null;
+
+            // Экземпляр Bootstrap Modal (если Bootstrap доступен)
+            let modalInstance = null;
+            if (confirmDeleteModalEl && window.bootstrap && bootstrap.Modal) {
+                try {
+                    modalInstance = new bootstrap.Modal(confirmDeleteModalEl, {
+                        backdrop: true,
+                        keyboard: true
+                    });
+                } catch (e) {
+                    console.warn('Не удалось инициализировать Bootstrap Modal:', e);
+                    modalInstance = null;
+                }
+            }
+
+            // Открыть модалку удаления с заполнением данных
+            function openDeleteModal({ url, id, name, cardEl = null }) {
+                deleteUrl = url || '';
+                currentItemId = id || '';
+                currentCard = cardEl || null;
+
+                if (itemNameEl) itemNameEl.textContent = name || 'элемент';
+
+                if (modalInstance) {
+                    modalInstance.show();
+                } else {
+                    // fallback — native confirm, если Bootstrap недоступен
+                    const ok = window.confirm(`Удалить "${name}"? Это действие нельзя отменить.`);
+                    if (ok) performDelete();
+                }
+            }
+
+            // Выполнение запроса удаления
+            function performDelete() {
+                if (!deleteUrl) {
+                    if (modalInstance) modalInstance.hide();
+                    return;
+                }
+
+                const csrftoken = getCookie('csrftoken');
+
+                fetch(deleteUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-CSRFToken': csrftoken || '',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                        return;
+                    }
+
+                    // Если не OK — попробуем прочитать тело как JSON и вывести сообщение
+                    return response.json().then(data => {
+                        const msg = data.detail || data.error || data.message || 'Ошибка при удалении';
+                        alert(msg);
+                    }).catch(() => {
+                        alert('Ошибка при удалении');
+                    });
+                })
+                .catch(error => {
+                    console.error('Delete error:', error);
+                    alert('Ошибка сети при удалении');
+                })
+                .finally(() => {
+                    // Сброс состояния и закрытие модалки
+                    deleteUrl = '';
+                    currentItemId = '';
+                    currentCard = null;
+                    if (modalInstance) modalInstance.hide();
+                });
+            }
+
+            // Привязка обработчиков к кнопкам удаления классов
+            document.querySelectorAll('.delete-classroom').forEach(button => {
+                button.addEventListener('click', function(event) {
+                    // Останавливаем переход по stretched-link и распространение
+                    event.stopPropagation();
+                    event.preventDefault();
+
+                    const cid = this.dataset.classroomId;
+                    const cname = this.dataset.classroomName || 'класс';
+                    const url = `/classrooms/${cid}/delete/`;
+
+                    // Ищем карточку — ближайший col или card
+                    const cardEl = this.closest('.col-md-6') || this.closest('[class^="col-"]') || this.closest('.card');
+
+                    openDeleteModal({ url: url, id: cid, name: cname, cardEl: cardEl });
+                });
+            });
+
+            // Привязка обработчиков к кнопкам удаления курса (если есть на странице)
+            document.querySelectorAll('.delete-course').forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    event.preventDefault();
+
+                    const courseId = this.dataset.courseId;
+                    const courseName = this.dataset.courseName || 'курс';
+                    const url = `/course/${courseId}/delete/`;
+
+                    const cardEl = this.closest('.col-md-6') || this.closest('[class^="col-"]') || this.closest('.card');
+
+                    openDeleteModal({ url: url, id: courseId, name: courseName, cardEl: cardEl });
+                });
+            });
+
+            // Обработчик подтверждения удаления в модалке
+            if (confirmDeleteButton) {
+                confirmDeleteButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    performDelete();
+                });
+            }
+
+            // Валидация формы курса (если присутствует)
+            const courseForm = document.getElementById('courseForm');
+            if (courseForm) {
+                courseForm.addEventListener('submit', function(e) {
+                    const nameInput = document.getElementById('name');
+                    if (!nameInput || nameInput.value.trim().length < 3) {
+                        e.preventDefault();
+                        alert('Название курса должно содержать минимум 3 символа');
+                        if (nameInput) nameInput.focus();
+                    }
+                });
+            }
+
+            // Show more кнопка — раскрытие скрытых extra-item
+            document.querySelectorAll('.show-more-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const section = btn.closest('section') || document;
+                    section.querySelectorAll('.extra-item').forEach(function(el) {
+                        el.classList.remove('d-none');
+                    });
+                    // Удаляем кнопку вместо скрытия, чтобы не занимала место
+                    btn.remove();
+                });
+            });
+
+            // Дополнительно: если модалка закрыта извне, очищаем состояние
+            if (confirmDeleteModalEl) {
+                confirmDeleteModalEl.addEventListener('hidden.bs.modal', function() {
+                    deleteUrl = '';
+                    currentItemId = '';
+                    currentCard = null;
+                    if (itemNameEl) itemNameEl.textContent = '';
+                });
+            }
+        });
+    </script>
+
+
+    {% if is_new %}
+    <!-- Модалка: Премиум / Что дальше -->
+    <div class="modal fade" id="premiumModal" tabindex="-1" aria-labelledby="premiumModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="premiumModalLabel">🎉 Доступ к Премиум открыт!</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body pt-2 text-center mt-5">
+                    <p class="mb-3 fs-6">Вы завершили обучение на <strong>80%</strong>. Что дальше?</p>
+                    <ul class="list-unstyled text-muted small mb-0">
+                        <li class="mb-1">✅ Экономьте время на подготовку уроков</li>
+                        <li>✅ Получите готовые материалы и шаблоны</li>
+                    </ul>
+                </div>
+                <div class="modal-footer d-flex flex-column gap-2 border-0 pt-3 px-3">
+                    <!-- Основная опция: Получить готовые уроки -->
+                    <button id="getLessonsBtn"
+                            class="btn btn-primary btn-lg w-100 fw-semibold shadow-sm"
+                            style="border-radius: 12px; font-size: 1rem;">
+                        Получить готовые уроки
+                    </button>
+
+                    <!-- Вторичная опция: Продолжить самостоятельно -->
+                    <button type="button"
+                            class="btn btn-outline-secondary btn-lg w-100 fw-normal"
+                            data-bs-dismiss="modal"
+                            style="border-radius: 12px; font-size: 0.95rem;">
+                        Продолжить самостоятельно
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const btnTelegram = document.getElementById("getLessonsBtn");
+            btnTelegram.addEventListener("click", function () {
+                // открываем пустое окно сразу по клику
+                const newWindow = window.open("", "_blank");
+
+                fetch("{% url 'link_telegram' %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}",
+                        "X-Requested-With": "XMLHttpRequest",
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error("Ошибка при запросе");
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.url) {
+                        // обновляем URL открытого окна
+                        newWindow.location.href = data.url;
+                    } else {
+                        newWindow.close(); // если что-то пошло не так
+                        alert("Не удалось связать Telegram. Попробуйте снова.");
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    newWindow.close();
+                    alert("Не удалось связать Telegram. Попробуйте снова.");
+                });
+            });
+        });
+    </script>
+
+
+    <!-- Floating Help Button -->
+    <button class="btn btn-light border rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center"
+            id="helpBtn"
+            style="position: fixed; bottom: 20px; left: 20px; width: 45px; height: 45px; z-index: 1050;">
+        <i class="bi bi-question-lg fs-4 text-secondary"></i>
+    </button>
+
+    <!-- Help Window -->
+    <div id="helpWindow" class="card border-0 shadow-sm"
+         style="display: none; position: fixed; bottom: 80px; left: 20px;
+                max-width: 320px; max-height: 70vh; width: 300px;
+                z-index: 1050; overflow-y: auto;">
+
+        <!-- Header -->
+        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+            <span class="fw-semibold text-dark fs-6">Справка</span>
+            <button type="button" class="btn-close btn-sm" id="helpClose"></button>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body p-0">
+            {% if role == "teacher" %}
+                <!-- Teacher Accordion -->
+                <div class="accordion accordion-flush" id="helpAccordionTeacher">
+                    <!-- Item 1 -->
+                    <div class="d-flex align-items-center justify-content-between p-3 mb-2 bg-light rounded shadow-sm">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-plus-circle me-2 text-primary fs-5"></i>
+                            <a href="{% url 'invitation_guide' %}" target="_blank" class="fw-bold text-dark text-decoration-none">
+                                Создание класса
+                            </a>
+                        </div>
+                        <a href="{% url 'invitation_guide' %}" class="text-primary">
+                            <i class="bi bi-arrow-right-circle fs-5"></i>
+                        </a>
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="d-flex align-items-center justify-content-between p-3 mb-2 bg-light rounded shadow-sm">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-book me-2 text-primary fs-5"></i>
+                            <a href="{% url 'course_guide' %}" target="_blank" class="fw-bold text-dark text-decoration-none">
+                                Генерация урока
+                            </a>
+                        </div>
+                        <a href="{% url 'course_guide' %}" class="text-primary">
+                            <i class="bi bi-arrow-right-circle fs-5"></i>
+                        </a>
+                    </div>
+
+                    <!-- Item 3 -->
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2 px-3 text-dark bg-light"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#teacherCollapseThree">
+                                <i class="bi bi-currency-exchange me-2 text-primary"></i>
+                                Токены
+                            </button>
+                        </h2>
+                        <div id="teacherCollapseThree" class="accordion-collapse collapse" data-bs-parent="#helpAccordionTeacher">
+                            <div class="accordion-body px-3 py-2 small text-muted">
+                                Внутренняя валюта платформы. Генерация 60-минутного урока: 40-80 токенов.
+                                Поиск картинки или 100 символов аудио: 1 токен.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Student Accordion -->
+                <div class="accordion accordion-flush" id="helpAccordionStudent">
+                    <!-- Item 1 -->
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2 px-3 text-dark bg-light"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#studentCollapseOne">
+                                <i class="bi bi-link-45deg me-2 text-primary"></i>
+                                Присоединение к уроку
+                            </button>
+                        </h2>
+                        <div id="studentCollapseOne" class="accordion-collapse collapse" data-bs-parent="#helpAccordionStudent">
+                            <div class="accordion-body px-3 py-2 small text-muted">
+                                Попросите преподавателя отправить вам пригласительную ссылку
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2 px-3 text-dark bg-light"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#studentCollapseTwo">
+                                <i class="bi bi-person-gear me-2 text-primary"></i>
+                                Смена роли
+                            </button>
+                        </h2>
+                        <div id="studentCollapseTwo" class="accordion-collapse collapse" data-bs-parent="#helpAccordionStudent">
+                            <div class="accordion-body px-3 py-2 small text-muted">
+                                <button class="btn btn-primary btn-sm fw-medium"
+                                        onclick="new bootstrap.Modal(document.getElementById('accountModal')).show(); document.getElementById('helpWindow').style.display='none';">
+                                    Настройки аккаунта
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item 3 -->
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2 px-3 text-dark bg-light"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#studentCollapseThree">
+                                <i class="bi bi-currency-exchange me-2 text-primary"></i>
+                                Токены
+                            </button>
+                        </h2>
+                        <div id="studentCollapseThree" class="accordion-collapse collapse" data-bs-parent="#helpAccordionStudent">
+                            <div class="accordion-body px-3 py-2 small text-muted">
+                                Внутренняя валюта платформы. Генерация 60-минутного урока: 40-80 токенов.
+                                Поиск картинки или 100 символов аудио: 1 токен.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer bg-white border-0 py-3 d-flex justify-content-between small">
+            <a href="https://t.me/linguaglowru" target="_blank" rel="noopener noreferrer"
+               class="text-decoration-none text-muted hover-text-primary">
+                <i class="bi bi-telegram me-1 text-primary"></i>Telegram
+            </a>
+            <a href="mailto:linguaglow0@gmail.com" class="text-decoration-none text-muted hover-text-primary">
+                <i class="bi bi-envelope me-1"></i>Поддержка
+            </a>
+        </div>
+    </div>
+
+    <!-- Add this CSS for hover effects -->
+    <style>
+        .hover-text-primary:hover {
+            color: #0d6efd !important;
+        }
+        .accordion-button:not(.collapsed) {
+            background-color: #f8f9fa;
+            box-shadow: none;
+        }
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: rgba(0,0,0,.125);
+        }
+    </style>
+
+    <!-- JS toggle -->
+    <script>
+        const helpBtn = document.getElementById("helpBtn");
+        const helpWindow = document.getElementById("helpWindow");
+        const helpClose = document.getElementById("helpClose");
+
+        helpBtn.addEventListener("click", () => {
+            helpWindow.style.display = "block";
+        });
+
+        helpClose.addEventListener("click", () => {
+            helpWindow.style.display = "none";
+        });
+    </script>
+    {% endif %}
+
+</body>
+</html>

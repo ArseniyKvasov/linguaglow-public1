@@ -1,0 +1,177 @@
+<style>
+    .tokens-section {
+        padding: 3rem 1rem;
+        background-color: #f8f9fa;
+        border-radius: 1rem;
+        margin-top: 2rem;
+    }
+    .token-card {
+        border: none;
+        border-radius: 1rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: #ffffff;
+    }
+    .token-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+    }
+    .token-card .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    .token-card p {
+        font-size: 1.5rem;
+    }
+    .token-card button {
+        padding: 0.5rem 1rem;
+    }
+    .original-price {
+        margin-right: 0.5rem;
+        font-size: 0.875rem;
+    }
+</style>
+
+{% load custom_filters %}
+<section class="tokens-section">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">Докупить токены</h2>
+            {% if marketing_tokens_text %}
+                <p id="marketing-tokens-text" class="lead text-success fw-bold">
+                    {{ marketing_tokens_text }}
+                    <span id="discount-tokens-timer" class="ms-2 badge bg-danger text-white"></span>
+                </p>
+            {% else %}
+                <p class="text-muted">Пополните баланс для эффективных заданий</p>
+            {% endif %}
+        </div>
+        <div class="row g-4 justify-content-center">
+            {% for pack in token_packs %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card token-card h-100 text-center p-4">
+                        <h5 class="card-title mb-2">{{ pack.amount|format_tokens }} токенов</h5>
+                        <p class="mb-3 text-primary fw-bold">
+                            {% if pack.full_price > pack.price %}
+                            <span class="original-price text-muted small">
+                                <del>{{ pack.full_price }} ₽</del>
+                            </span>
+                            {% endif %}
+                            {{ pack.price }} ₽
+                        </p>
+                        <button
+                            class="btn btn-primary rounded-pill mt-auto p-2 buy-tokens-btn"
+                            data-amount="{{ pack.amount }}">
+                            Приобрести
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Подсказка про токены -->
+        <div class="text-center mt-3 text-muted small">
+            <i class="bi bi-info-circle me-1"></i>
+            Докупленные токены сохраняются навсегда
+        </div>
+    </div>
+</section>
+
+<script>
+    // ---- Вызов connect_tokens ----
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.buy-tokens-btn').forEach(btn => {
+            btn.addEventListener('click', async function () {
+                const amount = this.dataset.amount;
+                this.disabled = true;
+
+                try {
+                    const resp = await fetch("{% url 'connect_tokens' %}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": "{{ csrf_token }}",
+                        },
+                        body: JSON.stringify({ amount: amount })
+                    });
+
+                    // Обрабатываем редирект вручную для неавторизованных
+                    console.log(resp.status);
+                    if (resp.status === 401 || resp.status === 403) {
+                        window.location.href = "{% url 'register' %}?next=shop/";
+                        return;
+                    }
+
+                    if (!resp.ok) {
+                        const text = await resp.text().catch(() => '');
+                        console.error('Server error:', resp.status, text);
+                        alert('Ошибка сервера при подключении тарифа. Попробуйте позже.');
+                        return;
+                    }
+
+                    const data = await resp.json();
+                    console.log("Ответ сервера:", data);
+
+                    if (data.confirmation_url) {
+                        window.location.href = data.confirmation_url;
+                    } else if (data.status === 'error') {
+                        alert('Ошибка оплаты: ' + (data.message || 'Неизвестная ошибка'));
+                    } else {
+                        alert(data.payment_description || 'Не удалось начать оплату');
+                    }
+
+                } catch (err) {
+                    console.error("Ошибка соединения:", err);
+                    alert('Ошибка соединения. Попробуйте позже.');
+                } finally {
+                    this.disabled = false;
+                }
+            });
+        });
+    });
+
+    // ---- Таймер скидки ----
+    document.addEventListener('DOMContentLoaded', function () {
+        {% if marketing_tokens_text and tokens_marketing_time_left %}
+        let timeLeft = {{ tokens_marketing_time_left }};
+        const timerEl = document.getElementById('discount-tokens-timer');
+        const marketingEl = document.getElementById('marketing-tokens-text');
+
+        if (!timerEl) return;
+
+        function renderTime(t) {
+            if (t <= 0) {
+                timerEl.textContent = 'Скидка истекла';
+                document.querySelectorAll('.discount-badge').forEach(b => b.remove());
+                if (marketingEl) {
+                    marketingEl.classList.remove('text-success');
+                    marketingEl.classList.add('text-muted');
+                }
+                return;
+            }
+
+            const days = Math.floor(t / 86400);
+            const hours = Math.floor((t % 86400) / 3600);
+            const minutes = Math.floor((t % 3600) / 60);
+            const seconds = t % 60;
+
+            const parts = [];
+            if (days > 0) {
+                parts.push(days + 'д');
+                if (hours > 0) parts.push(String(hours).padStart(2, '0') + 'ч');
+            } else if (hours > 0) {
+                parts.push(String(hours).padStart(2, '0') + 'ч');
+            }
+            parts.push(String(minutes).padStart(2, '0') + 'м');
+            parts.push(String(seconds).padStart(2, '0') + 'с');
+
+            timerEl.textContent = parts.join(' ');
+            setTimeout(() => {
+                timeLeft -= 1;
+                renderTime(timeLeft);
+            }, 1000);
+        }
+
+        renderTime(timeLeft);
+        {% endif %}
+    });
+</script>

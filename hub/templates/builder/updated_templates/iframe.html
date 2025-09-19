@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>LinguaGlow - Виртуальная доска</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <style>
+        body {
+            font-family: 'Montserrat', 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm rounded-bottom sticky-top" style="z-index: 10;">
+        <div class="container-fluid d-flex align-items-center">
+            <a class="navbar-brand text-primary fw-bold" href="{% url 'home' %}">LinguaGlow</a>
+        </div>
+    </nav>
+
+    <div class="card m-2 m-md-4 shadow border-0">
+        <!-- Тело карточки -->
+        <div class="card-body p-4">
+            <div class="embed-wrapper">
+                <!-- Кнопка запуска, embed_code передается через onclick -->
+                <button class="btn btn-primary btn-lg w-100 mb-3 d-flex justify-content-between align-items-center"
+                        data-iframe="{{ iframe_code|escape }}"
+                        onclick="toggleEmbed(this)">
+                    <span>Перейти</span>
+                    <i class="bi bi-arrow-right-circle-fill fs-4"></i>
+                </button>
+
+                <div class="embed-container embed-responsive embed-responsive-16by9 d-none">
+                    <iframe class="embed-responsive-item" allowfullscreen style="border: none; height: 400px;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleEmbed(button) {
+            const wrapper = button.closest('.embed-wrapper');
+            const iframeContainer = wrapper.querySelector('.embed-container');
+            const iframe = iframeContainer.querySelector('iframe');
+            const card = button.closest('.card');
+
+            // Получаем embed-код из data-атрибута
+            const embedCode = button.dataset.iframe;
+            if (!embedCode) return;
+
+            // Извлекаем src из iframe-кода
+            const srcMatch = embedCode.match(/src="([^"]+)"/);
+            if (!srcMatch || !srcMatch[1]) return;
+
+            // Показываем контейнер с iframe и скрываем кнопку запуска
+            iframeContainer.classList.remove('d-none');
+            button.classList.add('d-none');
+
+            // Добавляем элемент загрузки
+            let loader = document.createElement('div');
+            loader.className = 'loading-spinner d-flex justify-content-center align-items-center position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75';
+            loader.innerHTML = `
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            `;
+            iframeContainer.appendChild(loader);
+
+            // Устанавливаем src и классы
+            iframe.src = srcMatch[1];
+            iframe.classList.add('w-100');
+            iframe.style.height = "calc(100vh - 80px)";
+
+            // Удаляем loader по завершении загрузки
+            const removeLoader = () => {
+                if (loader) {
+                    loader.remove();
+                    loader = null;
+                }
+            };
+
+            iframe.onload = removeLoader;
+            setTimeout(removeLoader, 10000); // на случай, если загрузка зависла
+        }
+
+        function closeEmbed(button) {
+            const card = button.closest('.card');
+            const wrapper = card.querySelector('.embed-wrapper');
+            const iframeContainer = wrapper.querySelector('.embed-container');
+            const launchButton = wrapper.querySelector('button.btn.btn-primary.btn-lg');
+            const iframe = iframeContainer.querySelector('iframe');
+
+            // Скрываем контейнер с iframe и сбрасываем src
+            iframeContainer.classList.add('d-none');
+            iframe.src = "";
+            iframe.classList.remove('w-100');
+            iframe.style.height = "";
+
+            // Показываем кнопку запуска
+            launchButton.classList.remove('d-none');
+        }
+    </script>
+</body>
+</html>

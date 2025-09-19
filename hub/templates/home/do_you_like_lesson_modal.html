@@ -1,0 +1,104 @@
+<!-- home/do_you_like_lesson_modal.html -->
+<div class="modal fade" id="lessonModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-sm rounded-3">
+            <!-- Modal Header -->
+            <div class="modal-header border-bottom-0">
+                <h5 class="modal-title w-100 text-center">Следующий шаг</h5>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body text-center">
+                <p class="mb-4">Продолжим? Ты сможешь вернуться к этому уроку позже.</p>
+            </div>
+
+            <!-- Modal Footer (optional for custom bottom) -->
+            <div class="modal-footer d-flex justify-content-between">
+                <button id="btnLater" class="btn border-0 small text-secondary-emphasis me-2" style="font-size: 0.7rem;">Спросить через 20 секунд</button>
+                <button id="btnYes" class="btn btn-primary">Дальше</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // helper для API (использует имя пути из urls.py)
+    const UPDATE_URL = "{% url 'onboarding_update' %}";
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let c of cookies) {
+                c = c.trim();
+                if (c.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(c.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function updateStep(step, extra = {}) {
+        const payload = Object.assign({ step }, extra);
+        return fetch(UPDATE_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            credentials: "same-origin",
+            body: JSON.stringify(payload)
+        }).then(res => {
+            if (!res.ok) console.warn('onboarding update failed', res.status);
+            return res.json().catch(()=>{});
+        }).catch(err => console.error("Onboarding update error:", err));
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const modalEl = document.getElementById("lessonModal");
+        const lessonModal = new bootstrap.Modal(modalEl, {
+            backdrop: "static",
+            keyboard: false
+        });
+
+        const redirectUrl = "{% url 'onboarding' %}";
+
+        function showModal(delay = 0) {
+            setTimeout(() => {
+                lessonModal.show();
+            }, delay);
+        }
+
+        // первое открытие через 15 секунд
+        showModal(15000);
+
+        // кнопки
+        document.getElementById("btnYes").addEventListener("click", () => {
+            updateStep("generation_feedback").finally(() => {
+                window.location.href = redirectUrl;
+            });
+        });
+
+        document.getElementById("btnLater").addEventListener("click", () => {
+            lessonModal.hide();
+            showModal(20000); // снова показать через 20 сек
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Удаляем navbar
+        const navbar = document.querySelector("nav.navbar");
+        if (navbar) navbar.remove();
+
+        // Удаляем downloadPdfButton
+        const downloadBtn = document.getElementById("downloadPdfButton");
+        if (downloadBtn) downloadBtn.remove();
+
+        // Удаляем addToClassButton
+        const addToClassBtn = document.getElementById("addToClassButton");
+        if (addToClassBtn) addToClassBtn.remove();
+    });
+</script>

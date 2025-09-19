@@ -1,0 +1,73 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %} {% endblock %}</title>
+    <meta name="description" content="{% block description %}{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}{% endblock %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <style>
+        body { font-family: 'Montserrat', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    </style>
+</head>
+<body class="bg-white">
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=103833195', 'ym');
+
+        ym(103833195, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/103833195" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <!-- Логотип -->
+            <a class="navbar-brand fw-bold text-primary" href="{% url 'landing' %}">LinguaGlow</a>
+
+            <!-- Ссылки справа -->
+            {% if is_authenticated %}
+                <a href="{% url 'home' %}" class="text-decoration-none fw-bold d-flex align-items-center gap-2">
+                    <i class="bi bi-person-circle"></i>
+                    Аккаунт
+                </a>
+            {% else %}
+                <div>
+                    <a class="btn btn-primary btn-sm" href="{% url 'register' %}">Регистрация</a>
+                    <a class="btn btn-success btn-sm" href="{% url 'login' %}">Вход</a>
+                </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="d-flex justify-content-center">
+        <div id="main-container" class="rounded bg-white shadow m-3 mt-5 m-lg-5 p-3 p-lg-5" style="max-width: 700px;">
+            <div id="article-header">{% block article-header %}{% endblock %}</div>
+            <div id="article-body">{% block article-body %}{% endblock %}</div>
+            <div id="article-footer">{% block article-footer %}{% endblock %}</div>
+
+            <hr>
+
+            <a href="mailto:linguaglow0@gmail.com?subject=У%20меня%20возникли%20трудности%20с%20...&body=Пожалуйста,%20свяжитесь%20со%20мной%20по%20почте%20или%20по%20телефону%20..."
+               target="_blank"
+               class="d-block text-end text-decoration-none">
+                Написать в поддержку
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

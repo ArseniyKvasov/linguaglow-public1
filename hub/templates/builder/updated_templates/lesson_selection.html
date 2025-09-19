@@ -1,0 +1,338 @@
+{# lesson_selection.html #}
+<style>
+    .list-group-item .min-w-0 {
+      min-width: 0;               /* важно для flex */
+      overflow: hidden;           /* чтобы text-truncate сработал */
+    }
+
+    .list-group-item .text-truncate {
+      white-space: nowrap;        /* не переносить строки */
+      text-overflow: ellipsis;    /* "..." */
+      overflow: hidden;
+    }
+
+    /* Бейджи/иконки/кнопки не должны сжимать основной текст */
+    .list-group-item .badge,
+    .list-group-item .choose-btn,
+    .list-group-item > .fs-4 {
+      flex-shrink: 0;
+    }
+
+    /* На узких экранах дополнительно ограничим ширину текстового блока */
+    @media (max-width: 576px) {
+      .list-group-item .min-w-0 {
+        max-width: calc(100% - 120px); /* подкорректируй 120px под ширину иконок/бейджей/кнопки */
+      }
+    }
+
+</style>
+
+<div class="card" id="lesson-selection-root">
+    <div class="card-body">
+        <!-- Tabs -->
+        <ul class="nav nav-pills mb-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="public-tab" data-bs-toggle="pill" data-bs-target="#public-panel" type="button" role="tab" aria-controls="public-panel" aria-selected="true">
+                    Общее
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="personal-tab" data-bs-toggle="pill" data-bs-target="#personal-panel" type="button" role="tab" aria-controls="personal-panel" aria-selected="false">
+                    Личное
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- PUBLIC PANEL -->
+            <div class="tab-pane fade show active" id="public-panel" role="tabpanel" aria-labelledby="public-tab">
+                <div class="row g-2 mb-3 align-items-center">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="search" id="public-search" class="form-control" placeholder="Поиск уроков..." aria-label="Поиск уроков">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select id="public-level-filter" class="form-select" aria-label="Фильтр уровня">
+                            <option value="">Все уровни</option>
+                            <option value="A1">A1</option>
+                            <option value="A2">A2</option>
+                            <option value="B1">B1</option>
+                            <option value="B2">B2</option>
+                            <option value="C1">C1</option>
+                            <option value="C2">C2</option>
+                        </select>
+                    </div>
+                </div>
+
+                <ul class="list-group" id="public-list" role="list">
+                    {% for item in public_items %}
+                        <li class="list-group-item d-flex align-items-center"
+                            data-lesson-id="{{ item.id }}"
+                            data-is-public="true"
+                            data-name="{{ item.name|lower }}"
+                            data-level="{{ item.level }}">
+
+                            <!-- icon -->
+                            <span class="me-3 fs-4 flex-shrink-0" aria-hidden="true">
+                                {% if item.icon %}
+                                    <i class="bi {{ item.icon }}"></i>
+                                {% else %}
+                                    <i class="bi bi-book"></i>
+                                {% endif %}
+                            </span>
+
+                            <!-- title: flex-grow and shrinkable (min-width fallback) -->
+                            <div class="flex-grow-1" style="min-width:0; overflow:hidden;">
+                                {% if this_step_new %}
+                                    <span class="d-block fw-semibold text-truncate" title="{{ item.name }}">
+                                        {{ item.name }}
+                                    </span>
+                                {% else %}
+                                    <a href="/public/{{ item.url_name|urlencode }}"
+                                       class="text-decoration-none d-block fw-semibold text-truncate"
+                                       title="{{ item.name }}" target="_blank" rel="noopener noreferrer">
+                                        {{ item.name }}
+                                    </a>
+                                {% endif %}
+                            </div>
+
+                            <!-- level badge (flex-shrink-0 to keep space predictable) -->
+                            {% if item.level %}
+                                {% if item.level in "A1 A2" %}
+                                    <span class="badge bg-success ms-3 flex-shrink-0">{{ item.level }}</span>
+                                {% elif item.level in "B1 B2" %}
+                                    <span class="badge bg-primary ms-3 flex-shrink-0">{{ item.level }}</span>
+                                {% elif item.level in "C1 C2" %}
+                                    <span class="badge bg-warning text-dark ms-3 flex-shrink-0">{{ item.level }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary ms-3 flex-shrink-0">{{ item.level }}</span>
+                                {% endif %}
+                            {% endif %}
+
+                            <!-- choose button -->
+                            <button type="button" class="btn btn-link p-0 ms-3 choose-btn flex-shrink-0" title="Выбрать" aria-label="Выбрать">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item">Публичных уроков не найдено.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- PERSONAL PANEL -->
+            <div class="tab-pane fade" id="personal-panel" role="tabpanel" aria-labelledby="personal-tab">
+                {% if user_courses %}
+                    <div class="accordion" id="coursesAccordion">
+                        {% for c in user_courses %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading-{{ c.id }}">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ c.id }}" aria-expanded="false" aria-controls="collapse-{{ c.id }}">
+                                        <span class="me-2"><i class="bi bi-journal-text"></i></span>
+                                        <span class="fw-semibold text-truncate" style="max-width:60%;">{{ c.name }}</span>
+                                    </button>
+                                </h2>
+
+                                <div id="collapse-{{ c.id }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ c.id }}" data-bs-parent="#coursesAccordion">
+                                    <div class="accordion-body">
+                                        {% if c.lessons %}
+                                            <ul class="list-group">
+                                                {% for ls in c.lessons %}
+                                                    <li class="list-group-item d-flex align-items-center"
+                                                        data-lesson-id="{{ ls.id }}"
+                                                        data-is-public="false">
+
+                                                        <span class="me-3 fs-5 flex-shrink-0"><i class="bi bi-file-earmark-text"></i></span>
+
+                                                        <div class="flex-grow-1" style="min-width:0; overflow:hidden;">
+                                                            {% if this_step_new %}
+                                                                <span class="d-block text-truncate" title="{{ ls.name }}">
+                                                                    {{ ls.name }}
+                                                                </span>
+                                                            {% else %}
+                                                                <a href="/lesson/{{ ls.id }}"
+                                                                   class="text-decoration-none d-block text-truncate"
+                                                                   title="{{ ls.name }}"
+                                                                   target="_blank" rel="noopener noreferrer">
+                                                                    {{ ls.name }}
+                                                                </a>
+                                                            {% endif %}
+                                                        </div>
+
+                                                        <button type="button" class="btn btn-link p-0 ms-3 choose-btn flex-shrink-0" title="Выбрать урок" aria-label="Выбрать урок">
+                                                            <i class="bi bi-plus-lg"></i>
+                                                        </button>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <div class="text-muted small">Уроков в курсе нет.</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-secondary" role="alert">У вас ещё нет курсов.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const publicList = document.getElementById('public-list');
+    const searchInput = document.getElementById('public-search');
+    const levelFilter = document.getElementById('public-level-filter');
+    const root = document.getElementById('lesson-selection-root');
+
+    // helper: получить csrftoken из cookie (Django)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // собрать исходные элементы в массив (берём html и метаданные)
+    const originalLis = Array.from(publicList.querySelectorAll('li')).filter(li => !li.classList.contains('empty-msg'));
+    const items = originalLis.map(li => {
+        const link = li.querySelector('a');
+        const name = (li.dataset.name || (link ? link.textContent : '') || '').trim();
+        // читаем lesson id / is_public
+        const lessonId = li.getAttribute('data-lesson-id') || li.dataset.lessonId || '';
+        const isPublic = (li.getAttribute('data-is-public') || li.dataset.isPublic || 'false').toString() === 'true';
+        const level = (li.dataset.level || '').trim();
+        return {
+            name,
+            level,
+            lessonId,
+            isPublic,
+            html: li.innerHTML,
+            classes: li.className || 'list-group-item d-flex align-items-center',
+            dataset: { ...(li.dataset || {}) }
+        };
+    });
+
+    function renderList(list) {
+        publicList.innerHTML = '';
+        if (list.length === 0) {
+            const empty = document.createElement('li');
+            empty.className = 'list-group-item empty-msg';
+            empty.textContent = 'Публичных уроков не найдено.';
+            publicList.appendChild(empty);
+            return;
+        }
+
+        list.forEach(it => {
+            const li = document.createElement('li');
+            li.className = it.classes;
+            // восстановим data-атрибуты, включая lesson id и is_public
+            if (it.dataset) {
+                Object.keys(it.dataset).forEach(k => {
+                    li.setAttribute('data-' + k, it.dataset[k]);
+                });
+            }
+            // явные атрибуты, чтобы гарантировать наличие
+            if (it.lessonId) li.setAttribute('data-lesson-id', it.lessonId);
+            li.setAttribute('data-is-public', it.isPublic ? 'true' : 'false');
+
+            li.innerHTML = it.html;
+            publicList.appendChild(li);
+        });
+    }
+
+    function filterPublic() {
+        const q = (searchInput.value || '').trim().toLowerCase();
+        const lvl = (levelFilter.value || '').trim().toUpperCase();
+
+        const filtered = items.filter(it => {
+            const name = (it.name || '').toLowerCase();
+            const level = (it.level || '').toUpperCase();
+            const matchesQ = q === '' || name.includes(q);
+            const matchesL = lvl === '' || level === lvl;
+            return matchesQ && matchesL;
+        });
+
+        renderList(filtered);
+    }
+
+    // отправка на сервер: lesson_id, is_public
+    async function sendSelection(lessonId, isPublic) {
+        try {
+            const resp = await fetch('/lesson/select/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    lesson_id: lessonId,
+                    classroom_id: classroomId,
+                })
+            });
+
+            if (!resp.ok) {
+                console.error('Ошибка от сервера', resp.status);
+                return;
+            }
+            const data = await resp.json();
+            location.reload();
+        } catch (err) {
+            console.error('Fetch error:', err);
+        }
+    }
+
+    root.addEventListener('click', (e) => {
+        const btn = e.target.closest('.choose-btn');
+        if (!btn) return;
+        const li = btn.closest('li');
+        if (!li) return;
+
+        const lessonId = li.getAttribute('data-lesson-id') || '';
+        const isPublic = (li.getAttribute('data-is-public') || 'false') === 'true';
+
+        btn.disabled = true;
+        btn.classList.add('disabled');
+        sendSelection(lessonId, isPublic).finally(() => {
+            btn.disabled = false;
+            btn.classList.remove('disabled');
+        });
+
+        const ev = new CustomEvent('lesson:selected', { detail: { lessonId, isPublic, li } });
+        root.dispatchEvent(ev);
+    });
+
+    root.addEventListener('lesson:selected', (e) => {
+        console.log('Selected:', e.detail);
+    });
+
+    // debounce для поиска
+    function debounce(fn, ms = 200) {
+        let t;
+        return function (...args) {
+            clearTimeout(t);
+            t = setTimeout(() => fn.apply(this, args), ms);
+        };
+    }
+
+    searchInput.addEventListener('input', debounce(filterPublic, 200));
+    levelFilter.addEventListener('change', filterPublic);
+
+    // первичный рендер
+    renderList(items);
+})();
+</script>

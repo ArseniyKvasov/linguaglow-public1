@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Документы - LinguaGlow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: #f8f9fa;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .document-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .document-list li {
+            margin-bottom: 15px;
+        }
+
+        .document-list a {
+            text-decoration: none;
+            color: #007bff;
+            display: inline-block;
+            transition: color 0.3s;
+        }
+
+        .document-list a:hover {
+            color: #0056b3;
+        }
+
+        footer {
+            background: #f8f9fa;
+            padding: 15px 0;
+            text-align: center;
+            margin-top: 40px;
+        }
+    </style>
+    {% load static %}
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Документы компании LinguaGlow</h1>
+        </header>
+
+        <ul class="document-list">
+            <li><a href="{% static 'policy_personal_data.txt' %}">Политика в отношении обработки персональных данных</a></li>
+            <li><a href="{% static 'oferta.txt' %}">Оферта</a></li>
+            <li><a href="{% static 'advertisement_agreement.txt' %}">Согласие на получение информационных и рекламных материалов</a></li>
+            <li><a href="{% static 'back_conditions.txt' %}">Условия возврата денежных средств</a></li>
+            <li><a href="{% static 'user_agreement_data_policy.txt' %}">Согласие на обработку персональных данных</a></li>
+            <li><a href="{% static 'user_policy.txt' %}">Пользовательское соглашение</a></li>
+        </ul>
+
+        <footer>
+            © 2025 LinguaGlow
+        </footer>
+    </div>
+</body>
+</html>

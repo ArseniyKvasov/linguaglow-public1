@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinguaGlow — изучай языки умно</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    {% load static %}
+    {% load custom_tags %}
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #ffffff; /* белый фон */
+            color: #212529;
+            padding-top: 80px;
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero {
+            background-color: #ffffff; /* убран градиент, установлен белый фон */
+            padding: 6rem 1rem;
+            text-align: center;
+            animation: fadeIn 1s ease-in;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            color: #0d6efd;
+            animation: popIn 1s ease-out;
+        }
+
+        .hero .btn {
+            animation: riseUp 1s 0.5s ease both;
+        }
+
+        /* Features */
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #198754;
+            animation: swing 2s infinite ease-in-out;
+        }
+
+        .position-relative {
+            position: relative;
+        }
+
+        /* FAQ */
+        .faq-section {
+            padding: 4rem 1rem;
+            background-color: #ffffff; /* белый фон вместо серого */
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #0d6efd;
+            color: #fff;
+        }
+
+        .emoji {
+            width: 1.2em;
+            height: 1.2em;
+            vertical-align: text-bottom;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes riseUp {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes swing {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(5deg); }
+        }
+    </style>
+</head>
+<body>
+    <header class="bg-white shadow-sm py-3 fixed-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            <h2 class="text-primary fw-bold m-0">LinguaGlow</h2>
+            <a href="{% url 'register' %}" class="btn btn-success">Попробовать</a>
+        </div>
+    </header>
+
+    <section class="hero" style="min-height: 100vh;">
+        <div class="container mb-5">
+            <h1>Учи и преподавай языки с помощью ИИ</h1>
+            <p class="lead mt-3">Генерация урока, заданий и планов — всего за один запрос.</p>
+            <p>Легко перенести материалы учебника в виртуальный класс за секунды.</p>
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg mt-4">Начать бесплатно</a>
+        </div>
+
+        <div class="row text-center g-4 mt-5">
+            <div class="col-md-4">
+                <div class="feature-icon">
+                    <img src="{% static 'emojis/emoji_u1f9e0.svg' %}" alt="💡" class="emoji">
+                </div>
+                <h5 class="mt-2">Мгновенные уроки</h5>
+                <p>Генерируй полный урок одним запросом ИИ.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-icon">
+                    <img src="{% static 'emojis/emoji_u1f4da.svg' %}" alt="📚" class="emoji">
+                </div>
+                <h5 class="mt-2">Импорт из учебника</h5>
+                <p>Загружай PDF/Word и сразу работай в классе.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-icon">
+                    <img src="{% static 'emojis/emoji_u1f3ae.svg' %}" alt="🎮" class="emoji">
+                </div>
+                <h5 class="mt-2">Геймификация</h5>
+                <p>Анимации и элементы вовлечения для учеников.</p>
+            </div>
+        </div>
+    </section>
+
+    {% render_pricing_section %}
+
+    <section class="faq-section">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-4">Часто задаваемые вопросы</h2>
+            <div class="accordion accordion-flush" id="faqAccordion">
+                <div class="accordion-item rounded-4 shadow-sm mb-3 border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button rounded-4 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            Сколько учеников можно пригласить?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Вы можете добавить до <strong>100 учеников</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item rounded-4 shadow-sm mb-3 border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button rounded-4 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            Есть ли пробный период?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Да! Просто <a href="{% url 'register' %}" class="text-decoration-underline text-primary">зарегистрируйтесь</a>, и вы получите <strong>300 токенов ИИ бесплатно</strong> для старта.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item rounded-4 shadow-sm mb-3 border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button rounded-4 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            Что такое виртуальный класс?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Виртуальный класс — это пространство, где вы создаёте уроки, отслеживаете прогресс, проверяете ответы и ведёте занятия, не выходя с платформы. Всё в одном месте.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item rounded-4 shadow-sm mb-3 border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button rounded-4 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                            Можно ли работать по учебнику?
+                        </button>
+                    </h2>
+                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Да! Вы можете загрузить задания из учебника, а ИИ <strong>автоматически преобразует их</strong> под формат виртуального класса. Это упростит планирование и повысит вовлечённость учеников.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="text-center py-5">
+        <div class="container">
+            <h3>
+                Готовы попробовать LinguaGlow?
+                <img src="{% static 'emojis/emoji_u2728.svg' %}" alt="✨" class="emoji">
+            </h3>
+            <p class="mb-4">Начните бесплатно и преобразите свои занятия уже сегодня!</p>
+            <a href="{% url 'register' %}" class="btn btn-success btn-lg">Перейти на платформу</a>
+        </div>
+    </section>
+
+
+    <footer class="bg-light text-center py-3">
+        <div class="container">
+            <small>
+                © 2025 LinguaGlow |
+                <a href="{% url 'documents' %}" class="text-muted text-decoration-none">Правовые документы</a>
+            </small>
+            <div class="mt-2">
+                <p class="mb-1">
+                    <strong>ИП Квасов Арсений Олегович</strong>
+                </p>
+                <p class="mb-0">
+                    ИНН: 760907002896
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+
+    <div id="cookie-banner" class="position-fixed bottom-0 start-0 mb-4 ms-4 px-4 py-2 bg-white rounded-pill shadow d-none" style="z-index: 1080;">
+        <div class="d-flex align-items-center gap-3">
+            <span class="small text-dark mb-0">
+                Мы используем cookie для аналитики и улучшения работы сайта.
+            </span>
+            <button id="cookie-accept" class="btn btn-success btn-sm rounded-pill px-3">Ок</button>
+        </div>
+    </div>
+
+    <script>
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                let date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            let nameEQ = name + "=";
+            let ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i].trim();
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length);
+            }
+            return null;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            let banner = document.getElementById("cookie-banner");
+            let acceptBtn = document.getElementById("cookie-accept");
+
+            if (!getCookie("cookie_consent")) {
+                banner.classList.remove("d-none");
+                banner.style.opacity = 0;
+                banner.style.transition = "opacity 0.5s";
+                requestAnimationFrame(() => banner.style.opacity = 1);
+            }
+
+            acceptBtn.addEventListener("click", function () {
+                banner.style.opacity = 0;
+                setCookie("cookie_consent", "1", 365);
+                setTimeout(() => banner.remove(), 500);
+            });
+        });
+    </script>
+</body>
+</html>

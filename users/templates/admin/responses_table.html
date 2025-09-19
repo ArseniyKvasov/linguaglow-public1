@@ -1,0 +1,32 @@
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Контакт</th>
+            <th>Роль</th>
+            <th>Предмет</th>
+            <th>Telegram ДЗ</th>
+            <th>ИИ проверка</th>
+            <th>Текущий процесс</th>
+            <th>Тестер</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in responses %}
+        <tr>
+            <td>{{ r.created_at|date:"d.m.Y H:i" }}</td>
+            <td>{{ r.contact }}</td>
+            <td>{{ r.get_role_display }}</td>
+            <td>{{ r.subject }}</td>
+            <td>{{ r.get_tg_homework_display }}</td>
+            <td>{{ r.get_ai_checking_display }}</td>
+            <td>{{ r.workflow|default:"—" }}</td>
+            <td>{% if r.tester %}✅{% else %}—{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="8" class="text-center text-muted">Пока нет заявок</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

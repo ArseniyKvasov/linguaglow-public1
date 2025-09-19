@@ -1,0 +1,250 @@
+{% extends 'builder/updated_templates/base.html' %}
+
+{% load static %}
+{% load custom_filters %}
+{% load custom_tags %}
+
+{% block title %} LinguaGlow {% endblock %}
+
+{% block content %}
+    <div id="classroomId" class="d-none" data-classroom-id="{{ classroom_id }}"></div>
+
+    <!-- Модальное окно для полноэкранного режима звонка -->
+    <div class="modal fade" id="fullscreenModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content border-0">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">Видеозвонок LinguaGlow</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="jaas-fullscreen-container" style="height: calc(100vh - 60px);"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if is_new %}
+    <!-- Floating Help Button -->
+    <button class="btn btn-light border rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center"
+            id="helpBtn"
+            style="position: fixed; bottom: 20px; left: 20px; width: 45px; height: 45px; z-index: 1050;">
+        <i class="bi bi-question-lg fs-4 text-secondary"></i>
+    </button>
+
+    <!-- Help Window -->
+    <div id="helpWindow" class="card border-0 shadow-sm"
+         style="display: none; position: fixed; bottom: 80px; left: 20px;
+                max-width: 320px; max-height: 70vh; width: 300px;
+                z-index: 1050; overflow-y: auto;">
+
+        <!-- Header -->
+        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+            <span class="fw-semibold text-dark fs-6">Справка</span>
+            <button type="button" class="btn-close btn-sm" id="helpClose"></button>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body p-0">
+            {% if user_role == "teacher" %}
+                <!-- Teacher Help -->
+                <div class="accordion accordion-flush" id="helpAccordionTeacher">
+                    <!-- Invite Student -->
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2 px-3 text-dark bg-light"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#teacherCollapseOne">
+                                <i class="bi bi-person-plus me-2 text-primary"></i>
+                                Приглашение ученика
+                            </button>
+                        </h2>
+                        <div id="teacherCollapseOne" class="accordion-collapse collapse" data-bs-parent="#helpAccordionTeacher">
+                            <div class="accordion-body px-3 py-2 small text-muted">
+                                Нажмите
+                                <button class="btn btn-outline-primary btn-sm border-0 p-0 fw-medium ms-1"
+                                        data-bs-toggle="modal" data-bs-target="#invitationModal"
+                                        onclick="document.getElementById('helpWindow').style.display='none'">
+                                    Добавить ученика
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Change Lesson -->
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2 px-3 text-dark bg-light"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#teacherCollapseTwo">
+                                <i class="bi bi-arrow-repeat me-2 text-info"></i>
+                                Смена урока
+                            </button>
+                        </h2>
+                        <div id="teacherCollapseTwo" class="accordion-collapse collapse" data-bs-parent="#helpAccordionTeacher">
+                            <div class="accordion-body px-3 py-2 small text-muted">
+                                Нажмите
+                                <button class="btn btn-outline-primary btn-sm border-0 p-0 fw-medium ms-1"
+                                        data-bs-toggle="modal" data-bs-target="#chooseLessonModal"
+                                        onclick="document.getElementById('helpWindow').style.display='none'">
+                                    Выбрать урок
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technical Issues -->
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2 px-3 text-dark bg-light"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#teacherCollapseThree">
+                                <i class="bi bi-wifi-off me-2 text-warning"></i>
+                                Технические проблемы
+                            </button>
+                        </h2>
+                        <div id="teacherCollapseThree" class="accordion-collapse collapse" data-bs-parent="#helpAccordionTeacher">
+                            <div class="accordion-body px-3 py-2 small text-muted">
+                                Смените браузер, подключитесь к WiFi (не мобильному интернету) и обратитесь в поддержку.
+                                <div class="mt-2">
+                                    Если занятие начинается -
+                                    <a href="{% url 'download_pdf' lesson.id %}"
+                                       class="text-decoration-none text-primary fw-medium"
+                                       onclick="document.getElementById('helpWindow').style.display='none'">
+                                        скачайте PDF
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Student Help -->
+                <div class="accordion accordion-flush" id="helpAccordionStudent">
+                    <!-- Join Video Call -->
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2 px-3 text-dark bg-light"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#studentCollapseOne">
+                                <i class="bi bi-camera-video me-2 text-success"></i>
+                                Видеозвонок
+                            </button>
+                        </h2>
+                        <div id="studentCollapseOne" class="accordion-collapse collapse" data-bs-parent="#helpAccordionStudent">
+                            <div class="accordion-body px-3 py-2 small text-muted">
+                                Нажмите
+                                <button class="btn btn-outline-primary btn-sm border-0 p-0 fw-medium ms-1"
+                                        onclick="startVideoCall(); document.getElementById('helpWindow').style.display='none'">
+                                    Присоединиться
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technical Issues -->
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2 px-3 text-dark bg-light"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#studentCollapseThree">
+                                <i class="bi bi-wifi-off me-2 text-warning"></i>
+                                Технические проблемы
+                            </button>
+                        </h2>
+                        <div id="studentCollapseThree" class="accordion-collapse collapse" data-bs-parent="#helpAccordionStudent">
+                            <div class="accordion-body px-3 py-2 small text-muted">
+                                Смените браузер, подключитесь к WiFi (не мобильному интернету) и обратитесь в поддержку.
+                                Если занятие начинается - попросите учителя скачать PDF.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer bg-white border-0 py-3 d-flex justify-content-between small">
+            <a href="{% url 'home' %}" class="text-decoration-none text-muted hover-text-primary"
+               onclick="document.getElementById('helpWindow').style.display='none'">
+                <i class="bi bi-house me-1"></i>Главная
+            </a>
+            <a href="mailto:linguaglow0@gmail.com" class="text-decoration-none text-muted hover-text-primary">
+                <i class="bi bi-envelope me-1"></i>Поддержка
+            </a>
+        </div>
+    </div>
+
+    <!-- JS toggle -->
+    <script>
+        const helpBtn = document.getElementById("helpBtn");
+        const helpWindow = document.getElementById("helpWindow");
+        const helpClose = document.getElementById("helpClose");
+
+        helpBtn.addEventListener("click", () => {
+            helpWindow.style.display = "block";
+        });
+
+        helpClose.addEventListener("click", () => {
+            helpWindow.style.display = "none";
+        });
+    </script>
+    {% endif %}
+
+    <!-- Модальное окно для приглашения -->
+    {% if user_role == 'teacher' %}
+    <div class="modal fade" id="invitationModal" tabindex="-1" aria-labelledby="invitationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title d-flex align-items-center">
+                        <i class="bi bi-person-plus me-2"></i>
+                        <span id="invitationModalLabel">Приглашение ученика</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label for="invitationLink" class="form-label text-muted small">Ссылка для приглашения:</label>
+                        <div class="input-group">
+                            <input type="text" id="invitationLink" class="form-control py-2"
+                                   value="{{ invitation_link }}" readonly>
+                            <button class="btn btn-outline-secondary d-flex align-items-center" id="copyLinkButton" title="Копировать ссылку">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center text-muted small mt-3">
+                        <i class="bi bi-shield-lock me-2"></i>
+                        <span>Ссылка защищена и работает только для вашего класса</span>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn border-0" data-bs-dismiss="modal">
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Модальное окно выбора урока -->
+    <div class="modal fade" id="chooseLessonModal" tabindex="-1" aria-labelledby="chooseLessonModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="chooseLessonModalLabel">Выбрать урок для курса</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <script>
+                        const classroomId = '{{ classroom.id }}';
+                        console.log(classroomId);
+                    </script>
+                    {% lesson_selection %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'updated_functions/classroom.js' %}?v=10"></script>
+    <script src="https://jitsi-linguaglow.ru/libs/external_api.min.js"></script>
+    <script src="{% static 'updated_functions/app.js' %}?v=10"></script>
+{% endblock %}

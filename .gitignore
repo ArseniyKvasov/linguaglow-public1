@@ -1,0 +1,6 @@
+linguaglow/settings
+api_endpoints.py
+.venv/
+.env
+.idea/
+__pycache__/

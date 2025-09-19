@@ -1,0 +1,159 @@
+{% load static %}
+
+<!-- Кастомный тег: только инпуты -->
+<div class="mb-3">
+    <label for="lessonGenerationTopic" class="form-label">Тема урока *</label>
+    <input type="text"
+           id="lessonGenerationTopic"
+           class="form-control"
+           placeholder="Например: Past Simple"
+           required>
+</div>
+
+<script>
+    const apiUrl = "/api/lessons/generate";  // POST старт генерации
+    const statusUrlBase = "/api/lessons/generation-status/"; // GET {statusUrlBase}{generation_id}/
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // 1. Отправка запроса на генерацию
+    async function generateLessonRequest(course_id = null) {
+        const topic = document.getElementById("lessonGenerationTopic")?.value.trim();
+
+        if (!topic) {
+            alert("Пожалуйста, введите тему урока!");
+            return;
+        }
+
+        const payload = {
+            topic: topic,
+            considerations: null,
+            course_id: course_id
+        };
+
+        try {
+            const res = await fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken"),
+                },
+                body: JSON.stringify(payload),
+                credentials: "same-origin"
+            });
+
+            if (!res.ok && res.status !== 202) {
+                let errBody = "";
+                try { errBody = await res.json(); } catch(e) { errBody = await res.text(); }
+                console.error("Start generation failed", res.status, errBody);
+                return { error: errBody };
+            }
+
+            const data = await res.json();
+            console.log("Generation started:", data);
+            // data = { generation_id, task_id }
+
+            return data; // вернёт в вызывающий код
+        } catch (err) {
+            console.error("Ошибка запроса:", err);
+            return { error: err.message };
+        }
+    }
+
+    // 2. Опрос статуса по generationId
+    async function pollGenerationStatus(generationId, intervalMs = 2000) {
+        const url = statusUrlBase + encodeURIComponent(generationId) + "/";
+        let stopped = false;
+
+        async function tick() {
+            if (stopped) return;
+            try {
+                const res = await fetch(url, {
+                    method: "GET",
+                    headers: { "Accept": "application/json" },
+                    credentials: "same-origin"
+                });
+                if (res.ok) {
+                    const json = await res.json();
+                    console.log("Status update:", json);
+
+                    if (json.progress !== undefined) {
+                        updateLessonGenerationStatus(json.progress);
+                    }
+
+                    if (json.status === "running") {
+                        updateLessonGenerationStatus(json.percent || "5");
+                    }
+
+                    if (json.status === "finished") {
+                        updateLessonGenerationStatus(100);
+                        stopped = true;
+                        return;
+                    }
+
+                    if (json.status === "failed") {
+                        console.error("Generation failed:", json);
+                        // Обновляем шаг на "incorrect" и перезагружаем
+                        if (typeof updateStep === 'function') {
+                            updateStep("incorrect");
+                        } else if (typeof window.updateStep === 'function') {
+                            window.updateStep("incorrect");
+                        }
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                        stopped = true;
+                        return;
+                    }
+                } else {
+                    console.warn("Status check failed", res.status);
+                }
+            } catch (err) {
+                console.error("Status poll error", err);
+                // Обновляем шаг на "incorrect" и перезагружаем при ошибке
+                if (typeof updateStep === 'function') {
+                    updateStep("incorrect");
+                } else if (typeof window.updateStep === 'function') {
+                    window.updateStep("incorrect");
+                }
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+                stopped = true;
+                return;
+            }
+            setTimeout(tick, intervalMs);
+        }
+
+        try {
+            tick();
+        } catch (err) {
+            console.error("Initial poll error:", err);
+            // Обновляем шаг на "incorrect" и перезагружаем при начальной ошибке
+            if (typeof updateStep === 'function') {
+                updateStep("incorrect");
+            }
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+
+        return {
+            stop: () => { stopped = true; }
+        };
+    }
+</script>
+

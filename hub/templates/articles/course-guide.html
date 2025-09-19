@@ -1,0 +1,131 @@
+{% extends 'articles/base.html' %}
+{% block title %}Статья: Как создавать интерактивные курсы LinguaGlow{% endblock %}
+
+{% block article-header %}
+    <span class="fw-bold text-dark d-block">Как создавать интерактивные курсы LinguaGlow</span>
+    <span class="text-secondary d-block text-end" style="font-size: 0.7rem;">Статья</span>
+    <hr>
+{% endblock %}
+
+
+
+{% block article-body %}
+    <p class="fw-bold fs-6 mt-5">Как создать урок за 2 клика?</p>
+
+    <ol>
+        {% if course_id %}
+            <li>Перейдите по <a href="{% url 'lesson_list' course_id %}" target="_blank">ссылке</a> и нажмите кнопку <span class="fw-bold text-primary">+ Добавить урок</span> сверху справа</li>
+            <li>Выберите режим <span class="fw-bold text-primary">Сгенерировать урок</span> и введите тему.</li>
+        {% else %}
+            <li>Перейдите на <a href="{% url 'home' %}" target="_blank">главную страницу</a></li>
+            <li>Нажмите кнопку <span class="text-primary fw-bold">+ Класс</span></li>
+            <li>Введите название курса</li>
+            <li>На странице уроков нажмите кнопку <span class="fw-bold text-primary">+ Добавить урок</span> сверху справа</li>
+            <li>Выберите режим <span class="fw-bold text-primary">Сгенерировать урок</span> и введите тему.</li>
+        {% endif %}
+    </ol>
+
+
+    <p class="fw-bold fs-6 mt-5">Как сгенерировать раздел по своему плану?</p>
+
+    <ol>
+        {% if lesson_id %}
+            <li>Перейдите по <a href="{% url 'lesson_page' lesson_id %}" target="_blank">ссылке</a> и нажмите кнопку <span class="fw-bold text-primary">+ Добавить раздел</span> (на компьютерах - справа под списком разделов, на телефонах - снизу страницы)</li>
+            <li>Выберите тип раздела</li>
+            <li>Адаптируйте шаблон так, как вам хочется его видеть</li>
+        {% else %}
+            <li>Создайте любой урок, откройте его и нажмите кнопку <span class="fw-bold text-primary">+ Добавить раздел</span> (на компьютерах - справа под списком разделов, на телефонах - снизу страницы)</li>
+            <li>Выберите тип раздела</li>
+            <li>Адаптируйте шаблон так, как вам хочется его видеть</li>
+        {% endif %}
+    </ol>
+
+    <div class="alert alert-warning d-flex align-items-start gap-3 small shadow-sm">
+        <i class="bi bi-exclamation-triangle-fill fs-4 text-warning"></i>
+        <div>
+            <p class="mb-1 fw-bold">Важно:</p>
+            <p class="mb-1">
+                При генерации раздела аудио <u>не озвучивается автоматически</u>.
+            </p>
+            <p class="mb-0">
+                Вы должны нажать кнопку
+                <span class="fw-bold text-primary">
+                    <i class="bi bi-pencil me-1"></i> Редактировать задание
+                </span>, затем выбрать
+                <span class="text-primary fw-bold">
+                    <i class="bi bi-play me-1"></i> Озвучить
+                </span>.
+            </p>
+        </div>
+    </div>
+
+
+
+
+
+
+
+    <p class="fw-bold fs-6 mt-5">Как создавать задания по материалам учебника?</p>
+
+    <ol>
+        {% if lesson_id %}
+            <li>Перейдите по <a href="{% url 'lesson_page' lesson_id %}" target="_blank">ссылке</a> и нажмите кнопку <span class="fw-bold text-primary">+ Добавить задание</span> внизу страницы</li>
+            <li>Выберите тип задания - PDF</li>
+            <li>Загрузите PDF файл учебника</li>
+            <li>Сохраните</li>
+            <li>Выберите до 3 страниц, задания с которых вы хотите взять. Для этого сверху справа страницы нажмите кнопку <i class="bi bi-bookmark text-dark rounded shadow p-1 m-2"></i></li>
+            <li>Нажмите на кнопку <i class="bi bi-eye text-dark rounded m-2 p-1 shadow"></i> и кнопку <span class="fw-bold text-primary">Сгенерировать</span></li>
+        {% else %}
+            <li>Создайте любой урок и откройте его</li>
+            <li>Выберите тип раздела</li>
+            <li>Адаптируйте шаблон так, как вам хочется его видеть</li>
+        {% endif %}
+    </ol>
+
+    <div class="alert alert-warning d-flex align-items-start gap-3 small shadow-sm">
+        <i class="bi bi-exclamation-triangle-fill fs-4 text-warning"></i>
+        <div>
+            <p class="mb-1 fw-bold">Важно:</p>
+            <p class="mb-1">
+                Генерация заданий по учебнику доступно только в режиме создания курса <u>(недоступно в режиме виртуального класса)</u>
+            </p>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+
+
+{% block article-footer %}
+    <hr class="mt-5">
+
+    <div class="m-3 p-3 rounded shadow bg-white">
+        <p class="fw-bold mb-2">Научиться:</p>
+        <ul class="list-unstyled ps-3 mb-3">
+            <li class="mb-1">
+                <i class="bi bi-person-plus-fill text-warning me-2"></i>
+                Приглашать учеников в виртуальный класс
+            </li>
+            <li class="mb-1">
+                <i class="bi bi-camera-video-fill text-primary me-2"></i>
+                Начинать видеозвонок
+            </li>
+            <li class="mb-1">
+                <i class="bi bi-bullseye text-success me-2"></i>
+                Управлять вниманием учеников
+            </li>
+        </ul>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="text-secondary small">
+                <span class="badge bg-success me-1">
+                    <i class="bi bi-clock me-1"></i> 2 минуты
+                </span>
+            </span>
+            <a href="{% url 'invitation_guide' %}" target="_blank" class="btn btn-primary rounded d-flex align-items-center">
+                <i class="bi bi-arrow-right-circle me-2"></i> Перейти
+            </a>
+        </div>
+    </div>
+{% endblock %}

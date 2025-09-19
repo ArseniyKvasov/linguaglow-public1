@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        {% load static %}
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Арсений — Репетитор английского для 3–8 классов</title>
+
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+        <!-- Bootstrap 5 -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+        <style>
+            :root{--accent:#0ea5a4;--accent-2:#0b84ff;--urgent:#ff6b6b;--bg:#f7fbff;--muted:#6b7280;font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
+            body{background:linear-gradient(180deg,var(--bg),#fff);color:#0f172a}
+            .hero-card{border-radius:14px;padding:18px;background:#fff;box-shadow:0 8px 28px rgba(12,15,30,.06)}
+            .photo{border-radius:12px;object-fit:cover;box-shadow:0 6px 20px rgba(11,20,40,.06)}
+            .badge-accent{background:linear-gradient(90deg,var(--accent-2),var(--accent));color:#fff;padding:6px 10px;border-radius:999px;font-weight:700}
+            .badge-urgent{background:var(--urgent);color:#fff;padding:6px 10px;border-radius:999px;font-weight:700}
+            .hook{background:#f2fdff;padding:10px 12px;border-radius:10px;border:1px solid rgba(11,20,40,.04);font-weight:600}
+            .cert-thumb{height:84px;object-fit:cover;border-radius:6px;border:1px solid rgba(11,20,40,.04)}
+            .testimonial{border-left:4px solid var(--accent-2);padding:12px;border-radius:8px;background:#fff}
+            /* section spacing */
+            .section{padding-top:48px;padding-bottom:48px}
+            /* Bottom CTA styles */
+            .bottom-cta {
+                background: linear-gradient(90deg, var(--accent-2), var(--accent));
+                color: white;
+                padding: 12px 20px;
+                border-radius: 12px;
+                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+                margin: 10px;
+                pointer-events: auto;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container py-4">
+
+            <!-- Yandex.Metrika counter -->
+            <script type="text/javascript">
+                (function(m,e,t,r,i,k,a){
+                    m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+                    m[i].l=1*new Date();
+                    for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+                    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+                })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=104056556', 'ym');
+
+                ym(104056556, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+            </script>
+            <noscript><div><img src="https://mc.yandex.ru/watch/104056556" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+            <!-- /Yandex.Metrika counter -->
+
+
+            <!-- HERO -->
+            <header class="hero-card mb-4 section">
+                <div class="row g-3 align-items-center">
+                    <div class="col-12 col-md-4 text-center order-1">
+                        <img class="photo img-fluid rounded-3 mb-3 mb-md-0" src="{% static 'IMG_0414-2.jpg' %}" alt="Арсений — репетитор" />
+                    </div>
+
+                    <div class="col-12 col-md-8 order-2">
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <span class="badge-accent">Бесплатный пробный урок</span>
+                            <span class="badge-accent text-dark" style="background:#eef6ff;color:var(--accent-2);border:1px solid rgba(11,20,40,.04)">IELTS · DET</span>
+                            <span class="badge-urgent ms-auto">Осталось 2 места</span>
+                        </div>
+
+                        <h1 class="h3 fw-bold mb-2">Арсений — английский для 3–8 классов</h1>
+                        <p class="text-muted mb-3">Интерактивная методика и персональная программа. Быстрый прогресс — без стресса.</p>
+
+                        <div class="d-flex flex-column flex-sm-row gap-2 mb-3">
+                            <div class="hook d-flex align-items-center"><span class="me-2">🗣️</span><span>Ребёнок перестаёт бояться говорить</span></div>
+                            <div class="hook d-flex align-items-center"><span class="me-2">📈</span><span>Оценки и контрольные становятся проще</span></div>
+                            <div class="hook d-flex align-items-center"><span class="me-2">🎮</span><span>Домашка — как квест</span></div>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <div class="p-3 rounded-3" style="background:linear-gradient(90deg,rgba(11,132,255,.03),rgba(14,165,164,.02));border:1px solid rgba(11,20,40,.03)">
+                                    <strong>Почему именно я?</strong>
+                                    <p class="mb-2 text-muted small">Мой курс помог <strong>20 ученикам</strong> повысить эффективность обучения на <strong>40% за месяц</strong> — по отзывам и баллам.</p>
+                                    <div class="d-grid d-sm-block"><a class="btn btn-primary w-100 w-sm-auto mt-3" href="#contactModal" data-bs-toggle="modal">Записаться</a></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </header>
+
+            <!-- BENEFITS + PRICING -->
+            <section class="section">
+                <div class="row g-3">
+                    <!-- Важно родителям -->
+                    <div class="col-12 col-md-3">
+                        <div class="card h-100 p-3">
+                            <h6 class="mb-2">Важно родителям</h6>
+                            <ul class="mb-0 text-muted small">
+                                <li>План занятий и отчёт</li>
+                                <li>Интерактивная методика</li>
+                                <li>Индивидуальный подход</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Пробный -->
+                    <div class="col-6 col-md-3">
+                        <div class="card text-center p-3 h-100 position-relative">
+                            <div class="fw-bold">Пробный</div>
+                            <div class="h4 m-0">0 ₽</div>
+                            <div class="small text-muted">30 минут</div>
+                        </div>
+                    </div>
+
+                    <!-- Основной (выделенный) -->
+                    <div class="col-6 col-md-3">
+                        <div class="card text-center p-3 h-100 position-relative border-primary shadow-lg">
+                            <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-primary">
+                                Основной
+                            </span>
+                            <div class="fw-bold text-primary">45 мин</div>
+                            <div class="h4 m-0">1500 ₽</div>
+                            <div class="small text-muted">Выбор родителей</div>
+                        </div>
+                    </div>
+
+                    <!-- Максимальный -->
+                    <div class="col-12 col-md-3">
+                        <div class="card text-center p-3 h-100 position-relative opacity-75">
+                            <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-secondary">
+                                Максимальный
+                            </span>
+                            <div class="fw-bold">60 мин</div>
+                            <div class="h4 m-0">2000 ₽</div>
+                            <div class="small text-muted">Для максимального прогресса</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- REVIEWS + CERTS -->
+            <section class="section">
+                <div class="row g-3">
+                    <div class="col-12 col-lg-8">
+                        <h6 class="mb-3">Отзывы</h6>
+
+                        <div class="d-none d-lg-block">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <div class="testimonial h-100">
+                                        <div class="text">«Через 3 занятия сын стал увереннее в классе. Уроки — как приключение.»</div>
+                                        <div class="meta text-muted small mt-2">Марина — мама, 5 класс  <span class="text-warning ms-1">★★★★★</span></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <div class="testimonial h-100">
+                                        <div class="text">«Оценки выросли, ребёнок стал говорить свободнее.»</div>
+                                        <div class="meta text-muted small mt-2">Иван — папа, 7 класс  <span class="text-warning ms-1">★★★★★</span></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="testimonial">
+                                        <div class="text">«Домашка теперь выполняется с интересом — формат квеста работает.»</div>
+                                        <div class="meta text-muted small mt-2">Ольга — мама, 4 класс  <span class="text-warning ms-1">★★★★★</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="testimonialsCarousel" class="carousel slide d-lg-none mb-4" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <div class="testimonial"><div class="text">«Через 3 занятия сын стал увереннее.»</div><div class="meta text-muted small mt-2">Марина <span class="text-warning ms-1">★★★★★</span></div></div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="testimonial"><div class="text">«Оценки выросли, ребёнок стал говорить свободнее.»</div><div class="meta text-muted small mt-2">Иван <span class="text-warning ms-1">★★★★★</span></div></div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="testimonial"><div class="text">«Домашка выполняется с интересом.»</div><div class="meta text-muted small mt-2">Ольга <span class="text-warning ms-1">★★★★★</span></div></div>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#testimonialsCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Назад</span></button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#testimonialsCarousel" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Вперёд</span></button>
+                        </div>
+                    </div>
+
+                    <aside class="col-12 col-lg-4">
+                        <div class="card p-3 text-center h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <h6 class="mb-3">Сертификаты</h6>
+                                <div class="d-flex gap-3 justify-content-center align-items-center mb-2 flex-wrap">
+                                    <div class="text-center">
+                                        <img class="cert-thumb" src="{% static 'IELTS.jpg' %}" alt="IELTS">
+                                        <div class="mt-2"><button class="btn btn-sm btn-outline-primary open-cert-btn" data-src="{% static 'IELTS.jpg' %}" data-bs-toggle="modal" data-bs-target="#certIELTSModal">Открыть</button></div>
+                                    </div>
+
+                                    <div class="text-center">
+                                        <img class="cert-thumb" src="{% static 'DET.jpg' %}" alt="DET">
+                                        <div class="mt-2"><button class="btn btn-sm btn-outline-primary open-cert-btn" data-src="{% static 'DET.jpg' %}" data-bs-toggle="modal" data-bs-target="#certDETModal">Открыть</button></div>
+                                    </div>
+                                </div>
+                                <div class="text-muted small">IELTS (Cambridge), DET — 2023–2024</div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- CONTACT -->
+            <section id="contact" class="section">
+                <div class="card p-3">
+                    <h5 class="mb-2">Записаться на пробный урок</h5>
+                    <form class="row g-2" id="leadForm" method="POST" action="/users/arseniy/query/">
+                        {% csrf_token %}
+                        <div class="col-12 col-md-4">
+                            <input class="form-control" type="text" name="child_name" placeholder="Имя ребёнка" required>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <select class="form-select" name="grade" required>
+                                <option value="">Класс</option>
+                                <option>3 класс</option>
+                                <option>4 класс</option>
+                                <option>5 класс</option>
+                                <option>6 класс</option>
+                                <option>7 класс</option>
+                                <option>8 класс</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <input class="form-control" type="tel" name="phone" placeholder="Телефон" required>
+                        </div>
+                        <div class="col-12 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Отправить</button>
+                        </div>
+                        <div class="col-12 text-muted small mt-2">Осталось <strong>2 места</strong> на сентябрь.</div>
+                    </form>
+                </div>
+            </section>
+
+            <footer class="text-center text-muted small" style="margin-bottom: 90px;">© Арсений — Репетитор английского · Стаж 3 года · Сертификаты: IELTS, DET</footer>
+        </div>
+
+        <!-- Bottom CTA -->
+        <div class="fixed-bottom d-flex justify-content-center p-2" style="pointer-events: none;">
+            <div class="bottom-cta d-flex justify-content-between align-items-center" style="max-width: 980px; width: 100%;">
+                <div>
+                    <div class="fw-bold">Бесплатный пробный урок <span class="d-none d-md-inline"> — 30 минут</span></div>
+                    <div style="font-size:13px">Осталось 2 места</div>
+                </div>
+                <div>
+                    <button class="btn btn-light fw-bold" data-bs-toggle="modal" data-bs-target="#contactModal" style="pointer-events: auto;">Записаться</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <div class="modal fade" id="contactModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Записаться</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="modalForm" method="POST" action="/users/arseniy/query/">
+                            {% csrf_token %}
+                            <div class="mb-2">
+                                <input class="form-control" type="text" name="child_name" placeholder="Имя ребёнка" required>
+                            </div>
+                            <div class="mb-2">
+                                <select class="form-select" name="grade" required>
+                                    <option value="">Класс</option>
+                                    <option>3 класс</option>
+                                    <option>4 класс</option>
+                                    <option>5 класс</option>
+                                    <option>6 класс</option>
+                                    <option>7 класс</option>
+                                    <option>8 класс</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <input class="form-control" type="tel" name="phone" placeholder="Телефон" required>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-primary" type="submit">Отправить</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно успеха -->
+        <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-success">Успешно!</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-check-circle-fill text-success" viewBox="0 0 16 16">
+                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                            </svg>
+                        </div>
+                        <h4>Заявка успешно отправлена!</h4>
+                        <p>Я свяжусь с вами в ближайшее время для уточнения деталей.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Хорошо</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="certIELTSModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content bg-dark">
+                    <div class="modal-header border-0">
+                        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body d-flex align-items-center justify-content-center p-0">
+                        <img id="certModalImg" src="{% static 'IELTS.jpg' %}" alt="Сертификат" class="img-fluid" style="max-height:100vh;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="certDETModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content bg-dark">
+                    <div class="modal-header border-0">
+                        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body d-flex align-items-center justify-content-center p-0">
+                        <img id="certModalDETImg" src="{% static 'DET.jpg' %}" alt="Сертификат" class="img-fluid" style="max-height:100vh;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Обработка основной формы
+            const leadForm = document.getElementById("leadForm");
+            if (leadForm) {
+                leadForm.addEventListener("submit", async function(e) {
+                    e.preventDefault();
+                    await submitForm(this);
+                });
+            }
+
+            // Обработка модальной формы
+            const modalForm = document.getElementById("modalForm");
+            if (modalForm) {
+                modalForm.addEventListener("submit", async function(e) {
+                    e.preventDefault();
+                    await submitForm(this);
+
+                    // Закрываем модальное окно формы после отправки
+                    const contactModal = bootstrap.Modal.getInstance(document.getElementById('contactModal'));
+                    if (contactModal) {
+                        contactModal.hide();
+                    }
+                });
+            }
+
+            // Функция отправки формы
+            async function submitForm(form) {
+                const submitButton = form.querySelector('button[type="submit"]');
+                const originalText = submitButton.textContent;
+
+                // Показываем индикатор загрузки
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Отправка...';
+
+                try {
+                    const formData = new FormData(form);
+
+                    const response = await fetch(form.action, {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest",
+                            "X-CSRFToken": getCookie("csrftoken")
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        // Показываем модальное окно успеха
+                        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                        successModal.show();
+
+                        // Очищаем форму
+                        form.reset();
+                    } else {
+                        alert("Ошибка: " + result.error);
+                    }
+                } catch (err) {
+                    alert("Ошибка сети. Пожалуйста, попробуйте еще раз.");
+                } finally {
+                    // Восстанавливаем кнопку
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalText;
+                }
+            }
+
+            // Функция для получения CSRF токена
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== "") {
+                    const cookies = document.cookie.split(";");
+                    for (let cookie of cookies) {
+                        cookie = cookie.trim();
+                        if (cookie.startsWith(name + "=")) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+        </script>
+    </body>
+</html>

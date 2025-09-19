@@ -1,0 +1,13 @@
+User-agent: *
+Disallow: /users/
+Disallow: /hub/dashboard/
+Disallow: /hub/profile/
+Disallow: /hub/api/
+Disallow: /static/
+Disallow: /media/
+
+Allow: /public/
+
+Allow: /
+
+Sitemap: https://linguaglow.ru/sitemap.xml
