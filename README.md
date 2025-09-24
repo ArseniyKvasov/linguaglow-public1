@@ -49,24 +49,52 @@
 
 Чтобы запустить проект локально или на сервере, необходимо:
 
-1. Ввести свои ключи в файлы:
-   * linguaglow/settings.py
-   * .env
+1. Создать файл `.env` в корне проекта и добавить туда ключи:
+
    ```ini
    # API Keys
    UNSPLASH_ACCESS_KEY=your_unsplash_key
    PIXABAY_API_KEY=your_pixabay_key
    GROQ_ACCESS_KEY=your_groq_key
    GOOGLE_API_KEY=your_google_key
-
-   YANDEX_CLIENT_ID=your_yandex_client_id
-   YANDEX_CLIENT_SECRET=your_yandex_client_secret
-
    SMTPBZ_API_KEY=your_smtpbz_key
+````
 
-2. Настроить сервисы:
-   * **Celery** — для асинхронных задач (генерация, PDF).
-   * **Uvicorn / Gunicorn** — для запуска Django (ASGI).
-   * (опционально) **Nginx** — для проксирования и статики.
+⚠️ `.env` нельзя коммитить в публичный репозиторий!
 
-После этого проект будет готов к работе 🚀
+2. Установить зависимости:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Выполнить миграции и собрать статику:
+
+   ```bash
+   python manage.py migrate
+   python manage.py collectstatic --noinput
+   ```
+
+4. Запустить сервер:
+
+   * Локально (**Uvicorn**):
+
+     ```bash
+     uvicorn linguaglow.asgi:application --reload
+     ```
+   * В продакшене (**Gunicorn + UvicornWorker**):
+
+     ```bash
+     gunicorn linguaglow.asgi:application -k uvicorn.workers.UvicornWorker
+     ```
+
+5. Запустить **Celery** для асинхронных задач:
+
+   ```bash
+   celery -A linguaglow worker -l info
+   celery -A linguaglow beat -l info
+   ```
+
+6. (опционально) Настроить **Nginx** для проксирования и отдачи статики.
+
+После этих шагов проект будет готов к работе 🚀
