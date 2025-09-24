@@ -51,7 +51,19 @@
 
 1. Ввести свои ключи в файлы:
    * linguaglow/settings.py
-   * api_endpoints.py (в главной директории проекта)
+   * .env
+   ```ini
+   # API Keys
+   UNSPLASH_ACCESS_KEY=your_unsplash_key
+   PIXABAY_API_KEY=your_pixabay_key
+   GROQ_ACCESS_KEY=your_groq_key
+   GOOGLE_API_KEY=your_google_key
+
+   YANDEX_CLIENT_ID=your_yandex_client_id
+   YANDEX_CLIENT_SECRET=your_yandex_client_secret
+
+   SMTPBZ_API_KEY=your_smtpbz_key
+
 2. Настроить сервисы:
    * **Celery** — для асинхронных задач (генерация, PDF).
    * **Uvicorn / Gunicorn** — для запуска Django (ASGI).
