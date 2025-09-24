@@ -50,13 +50,14 @@
 Чтобы запустить проект локально или на сервере, необходимо:
 
 1. Создать файл `.env` в корне проекта и добавить туда ключи:
-
+   ```bash
    # API Keys
    UNSPLASH_ACCESS_KEY=your_unsplash_key
    PIXABAY_API_KEY=your_pixabay_key
    GROQ_ACCESS_KEY=your_groq_key
    GOOGLE_API_KEY=your_google_key
    SMTPBZ_API_KEY=your_smtpbz_key
+   ```
 
 2. Установить зависимости:
 
